@@ -21,9 +21,12 @@ import {
   Users
 } from "lucide-react"
 import { useEffect, useState } from "react"
+import emailjs from 'emailjs-com'
 
 export default function Portfolio() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
+
+  const [selectedImage, setSelectedImage] = useState(null)
 
   useEffect(() => {
     const handleMouseMove = (e) => {
@@ -48,26 +51,27 @@ export default function Portfolio() {
   const [subject, setSubject]     = useState("")
   const [message, setMessage]     = useState("")
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault()
-    const payload = { firstName, lastName, email, subject, message }
 
-    try {
-      const res = await fetch("/send-message", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      })
-      if (res.ok) {
-        alert("Message sent!")
-        setFirstName(""); setLastName(""); setEmail(""); setSubject(""); setMessage("")
-      } else {
-        alert("Error sending message.")
-      }
-    } catch (err) {
-      console.error(err)
-      alert("Network error.")
-    }
+    emailjs.sendForm(
+      "service_m41zzvm",
+      "template_n2lreka",
+      e.target,
+      "U-1firgXEsLBcvwyU"
+    )
+    .then((result) => {
+      alert("Message sent successfully!")
+      setFirstName("")
+      setLastName("")
+      setEmail("")
+      setSubject("")
+      setMessage("")
+    })
+    .catch((error) => {
+      console.error("EmailJS error:", error)
+      alert("Failed to send message. Please try again.")
+    })
   }
 
   const projects = [
@@ -172,9 +176,9 @@ export default function Portfolio() {
           <div className="relative">
             {/* Profile Photo */}
             <div
-              className="w-40 h-40 mx-auto rounded-full bg-gradient-to-r from-purple-400 to-gray-500 p-1 mb-8 overflow-hidden">
+              className="w-60 h-60 mx-auto rounded-full bg-gradient-to-r from-purple-400 to-gray-500 p-1 mb-8 overflow-hidden">
               <img
-                src="/placeholder.svg?height=160&width=160"
+                src="/pic.jpg"
                 alt="Profile Photo"
                 className="w-full h-full rounded-full object-cover bg-gray-800" />
             </div>
@@ -213,7 +217,7 @@ export default function Portfolio() {
 
         {/* Scroll Indicator */}
         <div
-          className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+          className="absolute bottom-0 left-1/2 transform -translate-x-1/2 animate-bounce">
           <div
             className="w-6 h-10 border-2 border-purple-400 rounded-full flex justify-center">
             <div className="w-1 h-3 bg-purple-400 rounded-full mt-2 animate-pulse" />
@@ -236,14 +240,17 @@ export default function Portfolio() {
                   transform: `translateY(${Math.sin((mousePosition.x + index * 100) * 0.01) * 3}px)`,
                 }}>
                 <CardContent className="p-6">
-                  <div className="aspect-video rounded-lg mb-4 overflow-hidden">
+                <div
+                  className="aspect-video rounded-lg mb-4 overflow-hidden cursor-pointer"
+                  onClick={() => setSelectedImage(project.image)} // ✅ move it here
+                >
                   <img
-                      src={project.image}
-                      alt={project.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                          />
-                  </div>
-
+                    src={project.image}
+                    alt={project.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                  />
+                </div>
+                
                   <h3 className="text-xl font-semibold mb-2 text-white">{project.title}</h3>
                   <p className="text-gray-300 mb-4 text-sm leading-relaxed">{project.description}</p>
                   <div className="flex flex-wrap gap-2">
@@ -348,12 +355,15 @@ export default function Portfolio() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-            <Button
-              size="lg"
-              className="bg-gradient-to-r from-purple-600 to-gray-700 hover:from-purple-700 hover:to-gray-800 text-white px-8 py-4 text-lg font-semibold transform hover:scale-105 transition-all duration-300">
-              <Download className="w-5 h-5 mr-2" />
-              Download Resume
-            </Button>
+            <a href="/cv.pdf" target="_blank" rel="noopener noreferrer">
+              <Button
+                size="lg"
+                className="bg-gradient-to-r from-purple-600 to-gray-700 hover:from-purple-700 hover:to-gray-800 text-white px-8 py-4 text-lg font-semibold transform hover:scale-105 transition-all duration-300"
+              >
+                <Download className="w-5 h-5 mr-2" />
+                View Resume
+              </Button>
+            </a>
 
             <Button
               onClick={() => scrollToSection("contact")}
@@ -369,92 +379,114 @@ export default function Portfolio() {
       {/* Contact Form Section */}
       <section id="contact" className="py-20 px-6 bg-gray-900/50">
         <div className="max-w-4xl mx-auto">
-          <h2
-            className="text-4xl md:text-5xl font-bold text-center mb-16 bg-gradient-to-r from-purple-400 to-gray-300 bg-clip-text text-transparent">
+          <h2 className="text-4xl md:text-5xl font-bold text-center mb-16 bg-gradient-to-r from-purple-400 to-gray-300 bg-clip-text text-transparent">
             Get In Touch
           </h2>
-
           <div className="grid md:grid-cols-2 gap-12">
-            {/* Contact Info */}
             <div className="space-y-8">
-              <div>
-                <h3 className="text-2xl font-semibold mb-6 text-white">Let's Connect</h3>
-                <p className="text-gray-300 mb-8 leading-relaxed">
-                  I'm always interested in hearing about new opportunities and exciting projects. Whether you have a
-                  question or just want to say hi, feel free to reach out!
-                </p>
-              </div>
-
-              <div className="space-y-4">
-                <div
-                  className="flex items-center space-x-4 text-gray-300 hover:text-purple-400 transition-colors">
+              <h3 className="text-2xl font-semibold mb-6 text-white">Let's Connect</h3>
+              <p className="text-gray-300 mb-8 leading-relaxed">
+                I'm always interested in hearing about new opportunities and exciting projects. Whether you have a question or just want to say hi, feel free to reach out!
+              </p>
+              <div className="space-y-4 text-gray-300">
+                <div className="flex items-center space-x-4 hover:text-purple-400 transition-colors">
                   <Mail className="w-6 h-6" />
                   <span>meharaudawatte@gmail.com</span>
                 </div>
-                <div
-                  className="flex items-center space-x-4 text-gray-300 hover:text-purple-400 transition-colors">
+                <div className="flex items-center space-x-4 hover:text-purple-400 transition-colors">
                   <Phone className="w-6 h-6" />
                   <span>+94 76 554 0319</span>
                 </div>
-                <div
-                  className="flex items-center space-x-4 text-gray-300 hover:text-purple-400 transition-colors">
+                <div className="flex items-center space-x-4 hover:text-purple-400 transition-colors">
                   <MapPin className="w-6 h-6" />
                   <span>Colombo, Sri Lanka</span>
                 </div>
               </div>
-
               <div className="flex space-x-4 pt-4">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="border-purple-400/50 text-purple-300 hover:bg-purple-600/20 bg-transparent">
-                  <Linkedin className="w-4 h-4" />
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="border-purple-400/50 text-purple-300 hover:bg-purple-600/20 bg-transparent">
-                  <Instagram className="w-4 h-4" />
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="border-purple-400/50 text-purple-300 hover:bg-purple-600/20 bg-transparent">
-                  <Github className="w-4 h-4" />
-                </Button>
+            <a
+              href="https://www.linkedin.com/in/mehara-udawatte"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Button
+                size="sm"
+                variant="outline"
+                className="border-purple-400/50 text-purple-300 hover:bg-purple-600/20 bg-transparent"
+              >
+                <Linkedin className="w-4 h-4" />
+              </Button>
+            </a>
+            <a
+              href="https://www.instagram.com/mehaa.ra?igsh=NmV5eXRnbG9mNXJk&utm_source=qr"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Button
+                size="sm"
+                variant="outline"
+                className="border-purple-400/50 text-purple-300 hover:bg-purple-600/20 bg-transparent"
+              >
+                <Instagram className="w-4 h-4" />
+              </Button>
+            </a>
+            <a
+              href="https://github.com/mehara2003"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Button
+                size="sm"
+                variant="outline"
+                className="border-purple-400/50 text-purple-300 hover:bg-purple-600/20 bg-transparent"
+              >
+                <Github className="w-4 h-4" />
+              </Button>
+            </a>
               </div>
             </div>
-
-            {/* Contact Form */}
             <Card className="bg-gray-800/40 backdrop-blur-lg border-gray-700/50">
               <CardContent className="p-6">
-                <form className="space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Input
-                        placeholder="First Name"
-                        className="bg-gray-800/50 border-gray-600/50 text-white placeholder:text-gray-400 focus:border-purple-400" />
-                    </div>
-                    <div>
-                      <Input
-                        placeholder="Last Name"
-                        className="bg-gray-800/50 border-gray-600/50 text-white placeholder:text-gray-400 focus:border-purple-400" />
-                    </div>
+                    <Input
+                      name="first_name"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      placeholder="First Name"
+                      //className="bg-gray-800/50 border-gray-600/50 text-white placeholder:text-gray-400 focus:border-purple-400"
+                    />
+                    <Input
+                      name="last_name"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      placeholder="Last Name"
+                      //className="bg-gray-800/50 border-gray-600/50 text-white placeholder:text-gray-400 focus:border-purple-400"
+                    />
                   </div>
                   <Input
+                    name="email"
                     type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     placeholder="Email Address"
-                    className="bg-gray-800/50 border-gray-600/50 text-white placeholder:text-gray-400 focus:border-purple-400" />
+                    //className="bg-gray-800/50 border-gray-600/50 text-white placeholder:text-gray-400 focus:border-purple-400"
+                  />
                   <Input
+                    name="subject"
+                    value={subject}
+                    onChange={(e) => setSubject(e.target.value)}
                     placeholder="Subject"
-                    className="bg-gray-800/50 border-gray-600/50 text-white placeholder:text-gray-400 focus:border-purple-400" />
+                    //className="bg-gray-800/50 border-gray-600/50 text-white placeholder:text-gray-400 focus:border-purple-400"
+                  />
                   <Textarea
+                    name="message"
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
                     placeholder="Your Message"
-                    rows={5}
-                    className="bg-gray-800/50 border-gray-600/50 text-white placeholder:text-gray-400 focus:border-purple-400 resize-none" />
-                  <Button
-                    type="submit"
-                    className="w-full bg-gradient-to-r from-purple-600 to-gray-700 hover:from-purple-700 hover:to-gray-800 text-white font-semibold py-3 transform hover:scale-105 transition-all duration-300">
+                    //rows={5}
+                    //className="bg-gray-800/50 border-gray-600/50 text-white placeholder:text-gray-400 focus:border-purple-400 resize-none"
+                  />
+                  <Button type="submit" className="w-full bg-gradient-to-r from-purple-600 to-gray-700 hover:from-purple-700 hover:to-gray-800 text-white font-semibold py-3 transform hover:scale-105 transition-all duration-300">
                     <Send className="w-4 h-4 mr-2" />
                     Send Message
                   </Button>
@@ -470,6 +502,23 @@ export default function Portfolio() {
           <p className="text-gray-400">© 2025 Mehara Udawatte. All rights reserved</p>
         </div>
       </footer>
+      {selectedImage && (
+  <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50">
+    <div className="relative max-w-3xl w-full mx-4">
+      <img
+        src={selectedImage}
+        alt="Project preview"
+        className="w-full h-auto rounded-lg border-4 border-purple-500"
+      />
+      <button
+        onClick={() => setSelectedImage(null)}
+        className="absolute top-2 right-2 text-white text-xl bg-purple-600 hover:bg-purple-700 rounded-full w-8 h-8 flex items-center justify-center"
+      >
+        ×
+      </button>
+    </div>
+  </div>
+)}
     </div>
   );
 }
