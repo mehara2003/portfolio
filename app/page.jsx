@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import emailjs from 'emailjs-com'
 import {
   Code,
   Database,
@@ -21,11 +22,9 @@ import {
   Users
 } from "lucide-react"
 import { useEffect, useState } from "react"
-import emailjs from 'emailjs-com'
 
 export default function Portfolio() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
-
   const [selectedImage, setSelectedImage] = useState(null)
 
   useEffect(() => {
@@ -34,7 +33,7 @@ export default function Portfolio() {
     }
 
     window.addEventListener("mousemove", handleMouseMove)
-    return () => window.removeEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove)
   }, [])
 
   const scrollToSection = (sectionId) => {
@@ -43,13 +42,12 @@ export default function Portfolio() {
       element.scrollIntoView({ behavior: "smooth" })
     }
   }
-  
-    // Contact form state
+
   const [firstName, setFirstName] = useState("")
-  const [lastName, setLastName]   = useState("")
-  const [email, setEmail]         = useState("")
-  const [subject, setSubject]     = useState("")
-  const [message, setMessage]     = useState("")
+  const [lastName, setLastName] = useState("")
+  const [email, setEmail] = useState("")
+  const [subject, setSubject] = useState("")
+  const [message, setMessage] = useState("")
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -57,29 +55,36 @@ export default function Portfolio() {
     emailjs.sendForm(
       "service_m41zzvm",
       "template_n2lreka",
-      e.target,
+      e.currentTarget,
       "U-1firgXEsLBcvwyU"
     )
-    .then((result) => {
-      alert("Message sent successfully!")
-      setFirstName("")
-      setLastName("")
-      setEmail("")
-      setSubject("")
-      setMessage("")
-    })
-    .catch((error) => {
-      console.error("EmailJS error:", error)
-      alert("Failed to send message. Please try again.")
-    })
+      .then(() => {
+        alert("Message sent successfully!")
+        setFirstName("")
+        setLastName("")
+        setEmail("")
+        setSubject("")
+        setMessage("")
+      })
+      .catch((error) => {
+        console.error("EmailJS error:", error)
+        alert("Failed to send message. Please try again.")
+      })
   }
 
   const projects = [
     {
       title: "Mammogram Report Interpretation Web App (Flask & NLP) ",
       description: "A Flask/React web app secured with Firebase that uses a sequence-to-sequence NLP model to translate technical mammogram reports into plain, patient-friendly language in real time. Uploads are automatically deleted after processing to protect privacy, empowering non-medical users to understand their results instantly.",
-      tech: ["React.js", "Firebase", "Machine Learning", "Figma", "Natural Language Processing (NLP)"],
+      tech: ["React.js", "python", "javascript", "Firebase", "Machine Learning", "Figma", "Natural Language Processing (NLP)"],
       image: "/upload.png",
+    },
+    {
+      title: "Solar Website",
+      description: "Developed a web application using React for a solar business with a user-friendly interface, featuring customer feedback, managed projects and more.",
+      tech: ["React.js", "typescript", "javascript", "GIT", "Figma",],
+      image: "/solar.png",
+     // link: "https://medical-annotation-platform.example.com"
     },
     {
       title: "A Movie app using Flutter",
@@ -102,13 +107,14 @@ export default function Portfolio() {
     {
       title: "Tasty BYTES Mobile App – UX Design Project",
       description: "Designed a mobile food-ordering app prototype for UCLan students and staff, focused on improving lunchtime efficiency. Created detailed user personas, low-fidelity wireframes, and a high-fidelity interactive prototype using Figma. The design addressed core UX requirements such as vendor listings based on real-time availability, filtered food menus, order tracking, and sustainable packaging representation. Justified design choices through annotations and user-centered design principles, supported by relevant UX research and design guidelines.",
-      tech: ["Figma", "UI principles"],
+      tech: ["Figma", "UI/UX principles"],
       image: "/ui.png",
     },
   ]
 
   const technicalSkills = [
     "JavaScript",
+    "typescript",
     "C++",
     "Python",
     "React",
@@ -118,17 +124,26 @@ export default function Portfolio() {
     "Dart",
     "HTML",
     "CSS",
+    "REST APIs",
+  ]
+  const databases = [
+    "MongoDB",
+    "PostgreSQL",
+    "Firebase",
+    "MySQL",
   ]
 
   const toolsPlatforms = [
     "Git",
+    "GitHub",
+    "Docker",
     "Unity",
     "Flutter",
-    "Firebase",
     "Jupyter Notebook",
     "Canva",
     "Figma",
     "VS Code",
+    "Android Studio",
   ]
 
   const softSkills = [
@@ -144,154 +159,240 @@ export default function Portfolio() {
   ]
 
   return (
-    <div
-      className="min-h-screen bg-gradient-to-br from-gray-800 via-purple-800 to-gray-900 text-white overflow-hidden">
-      {/* Animated Background Elements */}
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-950 text-slate-200 overflow-hidden">
+      {/* Subtle Mouse Follow Gradient */}
       <div
-        className="fixed inset-0 opacity-20 pointer-events-none"
+        className="fixed inset-0 pointer-events-none opacity-50"
         style={{
-          background: `radial-gradient(600px circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(139,69,193,0.2), transparent 40%)`,
-        }} />
+          background: `radial-gradient(600px circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(59,130,246,0.15), transparent 50%)`,
+        }}
+      />
+
       {/* Floating Particles */}
       <div className="fixed inset-0 pointer-events-none">
-        {[...Array(25)].map((_, i) => (
+        {[...Array(18)].map((_, i) => (
           <div
             key={i}
-            className="absolute w-1 h-1 bg-purple-300/40 rounded-full animate-pulse"
+            className="absolute w-2 h-2 rounded-full animate-pulse opacity-50"
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
               animationDelay: `${Math.random() * 3}s`,
-              transform: `translate(${mousePosition.x * 0.02}px, ${mousePosition.y * 0.02}px)`,
-            }} />
+              transform: `translate(${mousePosition.x * 0.012}px, ${mousePosition.y * 0.012}px)`,
+              backgroundColor: i % 4 === 0 ? '#60A5FA' : i % 4 === 1 ? '#818CF8' : i % 4 === 2 ? '#38BDF8' : '#A78BFA',
+            }}
+          />
         ))}
       </div>
+
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center px-6">
         <div
-          className="text-center space-y-8 transform transition-transform duration-300"
+          className="text-center space-y-6 transform transition-transform duration-300"
           style={{
-            transform: `translate(${mousePosition.x * 0.01}px, ${mousePosition.y * 0.01}px)`,
-          }}>
-          <div className="relative">
-            {/* Profile Photo */}
-            <div
-              className="w-60 h-60 mx-auto rounded-full bg-gradient-to-r from-purple-400 to-gray-500 p-1 mb-8 overflow-hidden">
-              <img
-                src="/pic.jpg"
-                alt="Profile Photo"
-                className="w-full h-full rounded-full object-cover bg-gray-800" />
-            </div>
-            <h1
-              className="text-6xl md:text-8xl font-bold bg-gradient-to-r from-purple-300 via-gray-200 to-purple-400 bg-clip-text text-transparent mb-4">
-              Mehara Udawatte
-            </h1>
-            <p className="text-xl md:text-2xl text-gray-300 mb-6">Undergraduate Software Engineer</p>
-            <p className="text-lg text-gray-400 max-w-2xl mx-auto leading-relaxed mb-8">
-              Motivated Software Engineer with strong leadership skills and experience in collaborative projects. Demonstrated ability to 
-              drive innovation and continuous learning in software development. Proven track record of delivering results in team 
-              environments. 
-            </p>
+            transform: `translate(${mousePosition.x * 0.006}px, ${mousePosition.y * 0.006}px)`,
+          }}
+        >
+          {/* Profile Photo */}
+          <div className="w-52 h-52 mx-auto rounded-full bg-gradient-to-br from-blue-500 via-indigo-500 to-violet-500 p-1 mb-6 overflow-hidden shadow-lg shadow-blue-500/20">
+            <img
+              src="/pic.png"
+              alt="Profile Photo"
+              className="w-full h-full rounded-full object-cover bg-slate-800"
+            />
+          </div>
 
-            {/* Navigation Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Button
-                onClick={() => scrollToSection("projects")}
-                size="lg"
-                className="bg-gradient-to-r from-purple-600 to-gray-700 hover:from-purple-700 hover:to-gray-800 text-white px-8 py-3 text-lg font-semibold transform hover:scale-105 transition-all duration-300">
-                <Eye className="w-5 h-5 mr-2" />
-                View My Work
-              </Button>
+          <h1 className="text-5xl md:text-7xl font-bold text-white mb-2">
+            Mehara Udawatte
+          </h1>
 
-              <Button
-                onClick={() => scrollToSection("contact")}
-                size="lg"
-                variant="outline"
-                className="border-purple-400/50 text-purple-300 hover:bg-purple-600/20 px-8 py-3 text-lg font-semibold transform hover:scale-105 transition-all duration-300 bg-transparent">
-                <MessageCircle className="w-5 h-5 mr-2" />
-                Get In Touch
-              </Button>
-            </div>
+          <p className="text-xl md:text-2xl text-blue-400 font-medium">Software Engineer</p>
+
+          <p className="text-base text-slate-400 max-w-xl mx-auto leading-relaxed">
+            I am a passionate Software Engineer who enjoys designing and building efficient software
+            solutions. I like solving problems through coding and creating applications that are useful and
+            reliable. I am always interested in learning new technologies and improving my skills to become a
+            better developer.
+          </p>
+
+          {/* Navigation Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
+            <Button
+              onClick={() => scrollToSection("projects")}
+              size="lg"
+              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-3 text-base font-medium transform hover:scale-105 transition-all duration-300 shadow-lg shadow-blue-500/25"
+            >
+              <Eye className="w-5 h-5 mr-2" />
+              View My Work
+            </Button>
+
+            <Button
+              onClick={() => scrollToSection("contact")}
+              size="lg"
+              variant="outline"
+              className="border-2 border-blue-500/50 text-blue-400 hover:bg-blue-500/10 px-8 py-3 text-base font-medium transform hover:scale-105 transition-all duration-300 bg-transparent"
+            >
+              <MessageCircle className="w-5 h-5 mr-2" />
+              Get In Touch
+            </Button>
           </div>
         </div>
 
         {/* Scroll Indicator */}
-        <div
-          className="absolute bottom-0 left-1/2 transform -translate-x-1/2 animate-bounce">
-          <div
-            className="w-6 h-10 border-2 border-purple-400 rounded-full flex justify-center">
-            <div className="w-1 h-3 bg-purple-400 rounded-full mt-2 animate-pulse" />
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+          <div className="w-5 h-8 border-2 border-blue-500/50 rounded-full flex justify-center">
+            <div className="w-1 h-2 bg-blue-500 rounded-full mt-1.5 animate-pulse" />
           </div>
         </div>
       </section>
+
       {/* Projects Section */}
-      <section id="projects" className="py-20 px-6">
-        <div className="max-w-7xl mx-auto">
-          <h2
-            className="text-4xl md:text-5xl font-bold text-center mb-16 bg-gradient-to-r from-purple-400 to-gray-300 bg-clip-text text-transparent">
+      <section id="projects" className="py-20 px-6 bg-slate-900/50">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-14 text-white">
             Featured Projects
           </h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {projects.map((project, index) => (
               <Card
                 key={index}
-                className="bg-gray-800/40 backdrop-blur-lg border-gray-700/50 hover:bg-gray-700/50 transition-all duration-300 group hover:scale-105"
+                className="bg-slate-800/50 border border-slate-700/50 hover:border-blue-500/50 transition-all duration-300 group hover:shadow-lg hover:shadow-blue-500/10"
                 style={{
-                  transform: `translateY(${Math.sin((mousePosition.x + index * 100) * 0.01) * 3}px)`,
-                }}>
-                <CardContent className="p-6">
-                <div
-                  className="aspect-video rounded-lg mb-4 overflow-hidden cursor-pointer"
-                  onClick={() => setSelectedImage(project.image)} // ✅ move it here
-                >
-                  <img
-                    src={project.image}
-                    alt={project.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                  />
-                </div>
-                
-                  <h3 className="text-xl font-semibold mb-2 text-white">{project.title}</h3>
-                  <p className="text-gray-300 mb-4 text-sm leading-relaxed">{project.description}</p>
-                  <div className="flex flex-wrap gap-2">
+                  transform: `translateY(${Math.sin((mousePosition.x + index * 100) * 0.01) * 2}px)`,
+                }}
+              >
+                <CardContent className="p-5">
+                  <div
+                    className="aspect-video rounded-lg mb-4 overflow-hidden cursor-pointer bg-slate-700/50"
+                    onClick={() => setSelectedImage(project.image)}
+                  >
+                    <img
+                      src={project.image}
+                      alt={project.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                  <h3 className="text-base font-semibold mb-2 text-slate-100 leading-tight">{project.title}</h3>
+                  <p className="text-slate-400 mb-3 text-sm leading-relaxed line-clamp-3">{project.description}</p>
+                  <div className="flex flex-wrap gap-1.5">
                     {project.tech.map((tech, techIndex) => (
                       <Badge
                         key={techIndex}
                         variant="secondary"
-                        className="bg-purple-600/20 text-purple-300 hover:bg-purple-600/30">
+                        className="bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 border-0 text-xs font-normal"
+                      >
                         {tech}
                       </Badge>
                     ))}
                   </div>
+                  {project.link && (
+                    <a
+                      href={project.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-block mt-3 text-blue-400 hover:text-blue-300 text-sm font-medium transition-colors"
+                    >
+                      Visit Project
+                    </a>
+                  )}
                 </CardContent>
               </Card>
             ))}
           </div>
         </div>
       </section>
+
+      {/* Education Section */}
+      <section className="py-20 px-6">
+        <div className="max-w-5xl mx-auto">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-14 text-white">
+            Education
+          </h2>
+          <div className="space-y-6">
+            <Card className="bg-slate-800/50 border border-blue-500/30 hover:border-blue-500/50 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300">
+              <CardContent className="p-6">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                  <div>
+                    <h3 className="text-lg font-semibold text-slate-100">Bachelor of Science in Software Engineering (Upper Second Class)</h3>
+                    <p className="text-blue-400 font-medium">University Of Lancashire</p>
+                    <p className="text-slate-400 text-sm mt-1">Relevant coursework: Data Structures, Algorithms, Software Engineering (Software Development Life Cycle, Agile Methodologies, System Design) </p>
+                  </div>
+                  <div className="text-right">
+                    <Badge variant="outline" className="border-blue-500/40 text-blue-300">2023 - 2025</Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+          <Card className="bg-slate-800/50 border border-blue-500/30 hover:border-blue-500/50 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300">
+              <CardContent className="p-6">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                  <div>
+                    <h3 className="text-lg font-semibold text-slate-100">Professional Qualification of Java Application Development using JavaSE</h3>
+                    <p className="text-blue-400 font-medium">University of Colombo School of Computing</p>
+                  </div>
+                  <div className="text-right">
+                    <Badge variant="outline" className="border-blue-500/40 text-blue-300">2024</Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-slate-800/50 border border-indigo-500/30 hover:border-indigo-500/50 hover:shadow-lg hover:shadow-indigo-500/10 transition-all duration-300">
+              <CardContent className="p-6">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                  <div>
+                    <h3 className="text-lg font-semibold text-slate-100">GCE A/L</h3>
+                    <p className="text-indigo-400 font-medium">Sirimavo Bandaranaike Vidyalaya</p>
+                  </div>
+                  <div className="text-right">
+                    <Badge variant="outline" className="border-indigo-500/40 text-indigo-300">2022 (2023)</Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-slate-800/50 border border-indigo-500/30 hover:border-indigo-500/50 hover:shadow-lg hover:shadow-indigo-500/10 transition-all duration-300">
+              <CardContent className="p-6">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                  <div>
+                    <h3 className="text-lg font-semibold text-slate-100">GCE O/L</h3>
+                    <p className="text-indigo-400 font-medium">Sirimavo Bandaranaike Vidyalaya</p>
+                  </div>
+                  <div className="text-right">
+                    <Badge variant="outline" className="border-indigo-500/40 text-indigo-300">2019</Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
       {/* Skills Section */}
-      <section className="py-20 px-6 bg-gray-900/50">
-        <div className="max-w-6xl mx-auto">
-          <h2
-            className="text-4xl md:text-5xl font-bold text-center mb-16 bg-gradient-to-r from-purple-400 to-gray-300 bg-clip-text text-transparent">
+      <section className="py-20 px-6 bg-slate-900/50">
+        <div className="max-w-5xl mx-auto">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-14 text-white">
             Skills & Expertise
           </h2>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Technical Skills */}
-            <Card
-              className="bg-gray-800/40 backdrop-blur-lg border-gray-700/50 hover:bg-gray-700/50 transition-all duration-300">
-              <CardContent className="p-6">
+            <Card className="bg-slate-800/50 border border-blue-500/30 hover:border-blue-500/50 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300">
+              <CardContent className="p-5">
                 <div className="flex items-center mb-4">
-                  <Code className="w-8 h-8 text-purple-400 mr-3" />
-                  <h3 className="text-xl font-semibold text-white">Technical Skills</h3>
+                  <div className="w-9 h-9 rounded-full bg-blue-500/20 flex items-center justify-center mr-3">
+                    <Code className="w-4 h-4 text-blue-400" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-slate-100">Technical Skills</h3>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {technicalSkills.map((skill, index) => (
                     <Badge
                       key={index}
                       variant="outline"
-                      className="border-purple-400/50 text-purple-300 hover:bg-purple-600/20 transition-colors">
+                      className="border-blue-500/40 text-blue-300 hover:bg-blue-500/20 transition-colors text-xs"
+                    >
                       {skill}
                     </Badge>
                   ))}
@@ -300,19 +401,21 @@ export default function Portfolio() {
             </Card>
 
             {/* Tools & Platforms */}
-            <Card
-              className="bg-gray-800/40 backdrop-blur-lg border-gray-700/50 hover:bg-gray-700/50 transition-all duration-300">
-              <CardContent className="p-6">
+            <Card className="bg-slate-800/50 border border-indigo-500/30 hover:border-indigo-500/50 hover:shadow-lg hover:shadow-indigo-500/10 transition-all duration-300">
+              <CardContent className="p-5">
                 <div className="flex items-center mb-4">
-                  <Database className="w-8 h-8 text-gray-400 mr-3" />
-                  <h3 className="text-xl font-semibold text-white">Tools & Platforms</h3>
+                  <div className="w-9 h-9 rounded-full bg-indigo-500/20 flex items-center justify-center mr-3">
+                    <Database className="w-4 h-4 text-indigo-400" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-slate-100">Tools & Platforms</h3>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {toolsPlatforms.map((tool, index) => (
                     <Badge
                       key={index}
                       variant="outline"
-                      className="border-gray-400/50 text-gray-300 hover:bg-gray-600/20 transition-colors">
+                      className="border-indigo-500/40 text-indigo-300 hover:bg-indigo-500/20 transition-colors text-xs"
+                    >
                       {tool}
                     </Badge>
                   ))}
@@ -320,20 +423,45 @@ export default function Portfolio() {
               </CardContent>
             </Card>
 
-            {/* Soft Skills */}
-            <Card
-              className="bg-gray-800/40 backdrop-blur-lg border-gray-700/50 hover:bg-gray-700/50 transition-all duration-300">
-              <CardContent className="p-6">
+                        {/* Databases */}
+            <Card className="bg-slate-800/50 border border-cyan-500/30 hover:border-cyan-500/50 hover:shadow-lg hover:shadow-cyan-500/10 transition-all duration-300">
+              <CardContent className="p-5">
                 <div className="flex items-center mb-4">
-                  <Users className="w-8 h-8 text-purple-300 mr-3" />
-                  <h3 className="text-xl font-semibold text-white">Soft Skills</h3>
+                  <div className="w-9 h-9 rounded-full bg-cyan-500/20 flex items-center justify-center mr-3">
+                    <Database className="w-4 h-4 text-cyan-400" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-slate-100">Databases</h3>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {databases.map((db, index) => (
+                    <Badge
+                      key={index}
+                      variant="outline"
+                      className="border-cyan-500/40 text-cyan-300 hover:bg-cyan-500/20 transition-colors text-xs"
+                    >
+                      {db}
+                    </Badge>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Soft Skills */}
+            <Card className="bg-slate-800/50 border border-violet-500/30 hover:border-violet-500/50 hover:shadow-lg hover:shadow-violet-500/10 transition-all duration-300">
+              <CardContent className="p-5">
+                <div className="flex items-center mb-4">
+                  <div className="w-9 h-9 rounded-full bg-violet-500/20 flex items-center justify-center mr-3">
+                    <Users className="w-4 h-4 text-violet-400" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-slate-100">Soft Skills</h3>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {softSkills.map((skill, index) => (
                     <Badge
                       key={index}
                       variant="outline"
-                      className="border-purple-300/50 text-purple-200 hover:bg-purple-600/20 transition-colors">
+                      className="border-violet-500/40 text-violet-300 hover:bg-violet-500/20 transition-colors text-xs"
+                    >
                       {skill}
                     </Badge>
                   ))}
@@ -343,22 +471,23 @@ export default function Portfolio() {
           </div>
         </div>
       </section>
+
+
       {/* Let's Work Together Section */}
-      <section className="py-20 px-6">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2
-            className="text-4xl md:text-5xl font-bold mb-8 bg-gradient-to-r from-purple-400 to-gray-300 bg-clip-text text-transparent">
-            Let's Work Together
+      <section className="py-20 px-6 bg-slate-900/50">
+        <div className="max-w-3xl mx-auto text-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">
+            Let&apos;s Work Together
           </h2>
-          <p className="text-xl text-gray-300 mb-12 max-w-2xl mx-auto">
-            Ready to bring your ideas to life? Let's collaborate and create something amazing together.
+          <p className="text-base text-slate-400 mb-10 max-w-xl mx-auto">
+            Ready to bring your ideas to life? Let&apos;s collaborate and create something amazing together.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <a href="/cv.pdf" target="_blank" rel="noopener noreferrer">
               <Button
                 size="lg"
-                className="bg-gradient-to-r from-purple-600 to-gray-700 hover:from-purple-700 hover:to-gray-800 text-white px-8 py-4 text-lg font-semibold transform hover:scale-105 transition-all duration-300"
+                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-3 text-base font-medium transform hover:scale-105 transition-all duration-300 shadow-lg shadow-blue-500/25"
               >
                 <Download className="w-5 h-5 mr-2" />
                 View Resume
@@ -369,98 +498,83 @@ export default function Portfolio() {
               onClick={() => scrollToSection("contact")}
               size="lg"
               variant="outline"
-              className="border-purple-400/50 text-purple-300 hover:bg-purple-600/20 px-8 py-4 text-lg font-semibold transform hover:scale-105 transition-all duration-300 bg-transparent">
+              className="border-2 border-indigo-500/50 text-indigo-400 hover:bg-indigo-500/10 px-8 py-3 text-base font-medium transform hover:scale-105 transition-all duration-300 bg-transparent"
+            >
               <Send className="w-5 h-5 mr-2" />
               Send Message
             </Button>
           </div>
         </div>
       </section>
+
       {/* Contact Form Section */}
-      <section id="contact" className="py-20 px-6 bg-gray-900/50">
+      <section id="contact" className="py-20 px-6">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-4xl md:text-5xl font-bold text-center mb-16 bg-gradient-to-r from-purple-400 to-gray-300 bg-clip-text text-transparent">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-14 text-white">
             Get In Touch
           </h2>
-          <div className="grid md:grid-cols-2 gap-12">
-            <div className="space-y-8">
-              <h3 className="text-2xl font-semibold mb-6 text-white">Let's Connect</h3>
-              <p className="text-gray-300 mb-8 leading-relaxed">
-                I'm always interested in hearing about new opportunities and exciting projects. Whether you have a question or just want to say hi, feel free to reach out!
+          <div className="grid md:grid-cols-2 gap-10">
+            <div className="space-y-6">
+              <h3 className="text-xl font-semibold text-slate-100">Let&apos;s Connect</h3>
+              <p className="text-slate-400 leading-relaxed">
+                I&apos;m always interested in hearing about new opportunities and exciting projects. Whether you have a question or just want to say hi, feel free to reach out!
               </p>
-              <div className="space-y-4 text-gray-300">
-                <div className="flex items-center space-x-4 hover:text-purple-400 transition-colors">
-                  <Mail className="w-6 h-6" />
-                  <span>meharaudawatte@gmail.com</span>
+              <div className="space-y-4">
+                <div className="flex items-center space-x-4 text-slate-300 hover:text-blue-400 transition-colors">
+                  <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
+                    <Mail className="w-4 h-4 text-blue-400" />
+                  </div>
+                  <span className="text-sm">meharaudawatte@gmail.com</span>
                 </div>
-                <div className="flex items-center space-x-4 hover:text-purple-400 transition-colors">
-                  <Phone className="w-6 h-6" />
-                  <span>+94 76 554 0319</span>
+                <div className="flex items-center space-x-4 text-slate-300 hover:text-indigo-400 transition-colors">
+                  <div className="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center">
+                    <Phone className="w-4 h-4 text-indigo-400" />
+                  </div>
+                  <span className="text-sm">+94 76 554 0319</span>
                 </div>
-                <div className="flex items-center space-x-4 hover:text-purple-400 transition-colors">
-                  <MapPin className="w-6 h-6" />
-                  <span>Colombo, Sri Lanka</span>
+                <div className="flex items-center space-x-4 text-slate-300 hover:text-violet-400 transition-colors">
+                  <div className="w-10 h-10 rounded-full bg-violet-500/20 flex items-center justify-center">
+                    <MapPin className="w-4 h-4 text-violet-400" />
+                  </div>
+                  <span className="text-sm">Colombo, Sri Lanka</span>
                 </div>
               </div>
-              <div className="flex space-x-4 pt-4">
-            <a
-              href="https://www.linkedin.com/in/mehara-udawatte"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Button
-                size="sm"
-                variant="outline"
-                className="border-purple-400/50 text-purple-300 hover:bg-purple-600/20 bg-transparent"
-              >
-                <Linkedin className="w-4 h-4" />
-              </Button>
-            </a>
-            <a
-              href="https://www.instagram.com/mehaa.ra?igsh=NmV5eXRnbG9mNXJk&utm_source=qr"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Button
-                size="sm"
-                variant="outline"
-                className="border-purple-400/50 text-purple-300 hover:bg-purple-600/20 bg-transparent"
-              >
-                <Instagram className="w-4 h-4" />
-              </Button>
-            </a>
-            <a
-              href="https://github.com/mehara2003"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Button
-                size="sm"
-                variant="outline"
-                className="border-purple-400/50 text-purple-300 hover:bg-purple-600/20 bg-transparent"
-              >
-                <Github className="w-4 h-4" />
-              </Button>
-            </a>
+              <div className="flex space-x-3 pt-2">
+                <a href="https://www.linkedin.com/in/mehara-udawatte" target="_blank" rel="noopener noreferrer">
+                  <Button size="sm" variant="outline" className="border-blue-500/40 text-blue-400 hover:bg-blue-500/20 h-9 w-9 p-0 bg-transparent">
+                    <Linkedin className="w-4 h-4" />
+                  </Button>
+                </a>
+                <a href="https://www.instagram.com/mehaa.ra?igsh=NmV5eXRnbG9mNXJk&utm_source=qr" target="_blank" rel="noopener noreferrer">
+                  <Button size="sm" variant="outline" className="border-indigo-500/40 text-indigo-400 hover:bg-indigo-500/20 h-9 w-9 p-0 bg-transparent">
+                    <Instagram className="w-4 h-4" />
+                  </Button>
+                </a>
+                <a href="https://github.com/mehara2003" target="_blank" rel="noopener noreferrer">
+                  <Button size="sm" variant="outline" className="border-slate-500/40 text-slate-400 hover:bg-slate-500/20 h-9 w-9 p-0 bg-transparent">
+                    <Github className="w-4 h-4" />
+                  </Button>
+                </a>
               </div>
             </div>
-            <Card className="bg-gray-800/40 backdrop-blur-lg border-gray-700/50">
-              <CardContent className="p-6">
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="grid grid-cols-2 gap-4">
+
+            <Card className="bg-slate-800/50 border border-slate-700/50 shadow-lg">
+              <CardContent className="p-5">
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="grid grid-cols-2 gap-3">
                     <Input
                       name="first_name"
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
                       placeholder="First Name"
-                      //className="bg-gray-800/50 border-gray-600/50 text-white placeholder:text-gray-400 focus:border-purple-400"
+                      className="bg-slate-700/50 border-slate-600/50 text-slate-200 placeholder:text-slate-500 focus:border-blue-500/50 focus:ring-blue-500/20 text-sm"
                     />
                     <Input
                       name="last_name"
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
                       placeholder="Last Name"
-                      //className="bg-gray-800/50 border-gray-600/50 text-white placeholder:text-gray-400 focus:border-purple-400"
+                      className="bg-slate-700/50 border-slate-600/50 text-slate-200 placeholder:text-slate-500 focus:border-blue-500/50 focus:ring-blue-500/20 text-sm"
                     />
                   </div>
                   <Input
@@ -469,24 +583,27 @@ export default function Portfolio() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Email Address"
-                    //className="bg-gray-800/50 border-gray-600/50 text-white placeholder:text-gray-400 focus:border-purple-400"
+                    className="bg-slate-700/50 border-slate-600/50 text-slate-200 placeholder:text-slate-500 focus:border-blue-500/50 focus:ring-blue-500/20 text-sm"
                   />
                   <Input
                     name="subject"
                     value={subject}
                     onChange={(e) => setSubject(e.target.value)}
                     placeholder="Subject"
-                    //className="bg-gray-800/50 border-gray-600/50 text-white placeholder:text-gray-400 focus:border-purple-400"
+                    className="bg-slate-700/50 border-slate-600/50 text-slate-200 placeholder:text-slate-500 focus:border-blue-500/50 focus:ring-blue-500/20 text-sm"
                   />
                   <Textarea
                     name="message"
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     placeholder="Your Message"
-                    //rows={5}
-                    //className="bg-gray-800/50 border-gray-600/50 text-white placeholder:text-gray-400 focus:border-purple-400 resize-none"
+                    rows={4}
+                    className="bg-slate-700/50 border-slate-600/50 text-slate-200 placeholder:text-slate-500 focus:border-blue-500/50 focus:ring-blue-500/20 resize-none text-sm"
                   />
-                  <Button type="submit" className="w-full bg-gradient-to-r from-purple-600 to-gray-700 hover:from-purple-700 hover:to-gray-800 text-white font-semibold py-3 transform hover:scale-105 transition-all duration-300">
+                  <Button
+                    type="submit"
+                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium py-2.5 transform hover:scale-[1.02] transition-all duration-300"
+                  >
                     <Send className="w-4 h-4 mr-2" />
                     Send Message
                   </Button>
@@ -496,29 +613,32 @@ export default function Portfolio() {
           </div>
         </div>
       </section>
+
       {/* Footer */}
-      <footer className="py-8 px-6 border-t border-gray-700/50">
-        <div className="max-w-6xl mx-auto text-center">
-          <p className="text-gray-400">© 2025 Mehara Udawatte. All rights reserved</p>
+      <footer className="py-6 px-6 border-t border-slate-800">
+        <div className="max-w-5xl mx-auto text-center">
+          <p className="text-slate-500 text-sm">© 2025 Mehara Udawatte. All rights reserved</p>
         </div>
       </footer>
+
+      {/* Image Modal */}
       {selectedImage && (
-  <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50">
-    <div className="relative max-w-3xl w-full mx-4">
-      <img
-        src={selectedImage}
-        alt="Project preview"
-        className="w-full h-auto rounded-lg border-4 border-purple-500"
-      />
-      <button
-        onClick={() => setSelectedImage(null)}
-        className="absolute top-2 right-2 text-white text-xl bg-purple-600 hover:bg-purple-700 rounded-full w-8 h-8 flex items-center justify-center"
-      >
-        ×
-      </button>
+        <div className="fixed inset-0 bg-black/70 flex justify-center items-center z-50">
+          <div className="relative max-w-3xl w-full mx-4">
+            <img
+              src={selectedImage}
+              alt="Project preview"
+              className="w-full h-auto rounded-lg border-4 border-slate-700 shadow-2xl"
+            />
+            <button
+              onClick={() => setSelectedImage(null)}
+              className="absolute top-2 right-2 text-white text-lg bg-blue-600 hover:bg-blue-700 rounded-full w-8 h-8 flex items-center justify-center transition-colors"
+            >
+              x
+            </button>
+          </div>
+        </div>
+      )}
     </div>
-  </div>
-)}
-    </div>
-  );
+  )
 }
