@@ -530,7 +530,11 @@ export default function Portfolio() {
               <CardContent className="p-5">
                 <form action="https://api.web3forms.com/submit" method="POST" className="space-y-4">
 
-                <input type="hidden" name="access_key" value={process.env.NEXT_PUBLIC_WEB3FORMS_KEY} />
+                <input
+                  type="hidden"
+                  name="access_key"
+                  value="b005c4fb-b4b4-477d-88e7-1edf3fe5a07f"
+                />
                 <input type="hidden" name="subject" value="New Portfolio Message" />
                 <input type="hidden" name="from_name" value="Portfolio Website" />
 
