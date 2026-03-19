@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import emailjs from "@emailjs/browser"
+
 import {
   Code,
   Database,
@@ -48,28 +48,6 @@ export default function Portfolio() {
   const [subject, setSubject] = useState("")
   const [message, setMessage] = useState("")
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-
-    emailjs.sendForm(
-      "service_m41zzvm",
-      "template_n2lreka",
-      e.currentTarget,
-      "U-1firgXEsLBcvwyU"
-    )
-      .then(() => {
-        alert("Message sent successfully!")
-        setFirstName("")
-        setLastName("")
-        setEmail("")
-        setSubject("")
-        setMessage("")
-      })
-      .catch((error) => {
-        console.error("EmailJS error:", error)
-        alert("Failed to send message. Please try again.")
-      })
-  }
 
   const projects = [
     {
@@ -550,8 +528,13 @@ export default function Portfolio() {
 
             <Card className="bg-slate-800/50 border border-slate-700/50 shadow-lg">
               <CardContent className="p-5">
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="grid grid-cols-2 gap-3">
+                <form action="https://api.web3forms.com/submit" method="POST" className="space-y-4">
+
+                <input type="hidden" name="access_key" value={process.env.NEXT_PUBLIC_WEB3FORMS_KEY} />
+                <input type="hidden" name="subject" value="New Portfolio Message" />
+                <input type="hidden" name="from_name" value="Portfolio Website" />
+
+                <div className="grid grid-cols-2 gap-3">
                     <Input
                       name="first_name"
                       value={firstName}
