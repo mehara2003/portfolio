@@ -9,7 +9,6 @@ import emailjs from "@emailjs/browser"
 import {
   Code,
   Database,
-  Download,
   Eye,
   Github,
   Instagram,
@@ -484,15 +483,6 @@ export default function Portfolio() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <a href="/cv.pdf" target="_blank" rel="noopener noreferrer">
-              <Button
-                size="lg"
-                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-3 text-base font-medium transform hover:scale-105 transition-all duration-300 shadow-lg shadow-blue-500/25"
-              >
-                <Download className="w-5 h-5 mr-2" />
-                View Resume
-              </Button>
-            </a>
 
             <Button
               onClick={() => scrollToSection("contact")}
