@@ -1,5 +1,6 @@
 "use client"
 
+import ScrollReveal from "@/components/ScrollReveal"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -7,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 
 import {
+  ChevronDown,
   Code,
   Database,
   Eye,
@@ -20,19 +22,173 @@ import {
   Send,
   Users
 } from "lucide-react"
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
+
+// Reusable 3D Tilt Card Component for Projects and Education
+function TiltCard({ children, className, ...props }) {
+  const [style, setStyle] = useState({})
+
+  const handleMouseMove = (e) => {
+    const card = e.currentTarget
+    const rect = card.getBoundingClientRect()
+    const x = e.clientX - rect.left
+    const y = e.clientY - rect.top
+    const centerX = rect.width / 2
+    const centerY = rect.height / 2
+    const rotateX = ((centerY - y) / centerY) * 8 // Max 8 degrees tilt
+    const rotateY = ((x - centerX) / centerX) * 8
+
+    setStyle({
+      transform: `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`,
+      transition: "transform 0.1s ease-out",
+    })
+  }
+
+  const handleMouseLeave = () => {
+    setStyle({
+      transform: "perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)",
+      transition: "transform 0.5s ease-in-out",
+    })
+  }
+
+  return (
+    <div
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={style}
+      className={className}
+      {...props}
+    >
+      {children}
+    </div>
+  )
+}
+
+// Reusable Magnetic Button Component
+function MagneticButton({ children, className, onClick, ...props }) {
+  const [style, setStyle] = useState({})
+
+  const handleMouseMove = (e) => {
+    const btn = e.currentTarget
+    const rect = btn.getBoundingClientRect()
+    const x = e.clientX - (rect.left + rect.width / 2)
+    const y = e.clientY - (rect.top + rect.height / 2)
+    
+    setStyle({
+      transform: `translate(${x * 0.22}px, ${y * 0.22}px)`,
+      transition: "transform 0.1s ease-out",
+    })
+  }
+
+  const handleMouseLeave = () => {
+    setStyle({
+      transform: "translate(0px, 0px)",
+      transition: "transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)", // Elastic snap back
+    })
+  }
+
+  return (
+    <Button
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={style}
+      onClick={onClick}
+      className={className}
+      {...props}
+    >
+      {children}
+    </Button>
+  )
+}
 
 export default function Portfolio() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const [selectedImage, setSelectedImage] = useState(null)
+  const [scrollProgress, setScrollProgress] = useState(0)
+  const [activeSection, setActiveSection] = useState("home")
 
+  // Form states
+  const [firstName, setFirstName] = useState("")
+  const [lastName, setLastName] = useState("")
+  const [email, setEmail] = useState("")
+  const [subject, setSubject] = useState("")
+  const [message, setMessage] = useState("")
+
+  // Subheading Typing Animation States
+  const [typedText, setTypedText] = useState("")
+  const [roleIndex, setRoleIndex] = useState(0)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const roles = useMemo(() => ["Software Engineer", "Full Stack Developer", "Problem Solver", "UI/UX Designer"], [])
+
+  // Monitor mouse position
   useEffect(() => {
     const handleMouseMove = (e) => {
       setMousePosition({ x: e.clientX, y: e.clientY })
     }
-
     window.addEventListener("mousemove", handleMouseMove)
     return () => window.removeEventListener("mousemove", handleMouseMove)
+  }, [])
+
+  // Typing effect loop
+  useEffect(() => {
+    let timer
+    const currentRole = roles[roleIndex]
+    const typingSpeed = isDeleting ? 40 : 100
+
+    if (!isDeleting && typedText === currentRole) {
+      // Pause at full word
+      timer = setTimeout(() => setIsDeleting(true), 2200)
+    } else if (isDeleting && typedText === "") {
+      setIsDeleting(false)
+      setRoleIndex((prev) => (prev + 1) % roles.length)
+    } else {
+      timer = setTimeout(() => {
+        setTypedText(
+          isDeleting
+            ? currentRole.substring(0, typedText.length - 1)
+            : currentRole.substring(0, typedText.length + 1)
+        )
+      }, typingSpeed)
+    }
+
+    return () => clearTimeout(timer)
+  }, [typedText, isDeleting, roleIndex, roles])
+
+  // Monitor scroll progress and scroll spy active section
+  useEffect(() => {
+    const handleScroll = () => {
+      const totalHeight = document.documentElement.scrollHeight - window.innerHeight
+      if (totalHeight > 0) {
+        setScrollProgress((window.scrollY / totalHeight) * 100)
+      }
+
+      // Check if user is scrolled to the absolute bottom (to robustly highlight contact section)
+      const isAtBottom = window.scrollY >= totalHeight - 15
+      if (isAtBottom) {
+        setActiveSection("contact")
+        return
+      }
+
+      // Scroll spy logic
+      const sections = ["home", "projects", "education", "skills", "contact"]
+      const scrollPosition = window.scrollY + 250 // trigger offset
+
+      for (const section of sections) {
+        const el = document.getElementById(section)
+        if (el) {
+          const top = el.offsetTop
+          const height = el.offsetHeight
+          if (scrollPosition >= top && scrollPosition < top + height) {
+            setActiveSection(section)
+            break
+          }
+        }
+      }
+    }
+
+    window.addEventListener("scroll", handleScroll)
+    handleScroll() // initial call
+    return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
   const scrollToSection = (sectionId) => {
@@ -42,16 +198,22 @@ export default function Portfolio() {
     }
   }
 
-  const [firstName, setFirstName] = useState("")
-  const [lastName, setLastName] = useState("")
-  const [email, setEmail] = useState("")
-  const [subject, setSubject] = useState("")
-  const [message, setMessage] = useState("")
-
+  // Pre-generate particle coordinates so they do not random-jitter on mouse movement re-renders
+  const particles = useMemo(() => {
+    return [...Array(22)].map((_, i) => ({
+      id: i,
+      left: `${(i * 7 + 11) % 100}%`,
+      top: `${(i * 13 + 7) % 100}%`,
+      size: ((i * 3) % 6) + 4, // 4px to 10px
+      delay: `${(i * 0.4).toFixed(1)}s`,
+      speedFactor: 0.006 + (i % 3) * 0.005, // variable parallax shift speeds
+      color: i % 4 === 0 ? '#38bdf8' : i % 4 === 1 ? '#818cf8' : i % 4 === 2 ? '#60a5fa' : '#a78bfa'
+    }))
+  }, [])
 
   const projects = [
     {
-      title: "Mammogram Report Interpretation Web App (Flask & NLP) ",
+      title: "Mammogram Report Interpretation Web App (Flask & NLP)",
       description: "A Flask/React web app secured with Firebase that uses a sequence-to-sequence NLP model to translate technical mammogram reports into plain, patient-friendly language in real time. Uploads are automatically deleted after processing to protect privacy, empowering non-medical users to understand their results instantly.",
       tech: ["React.js", "python", "javascript", "Firebase", "Machine Learning", "Figma", "Natural Language Processing (NLP)"],
       image: "/upload.png",
@@ -59,9 +221,8 @@ export default function Portfolio() {
     {
       title: "Solar Website",
       description: "Developed a web application using React for a solar business with a user-friendly interface, featuring customer feedback, managed projects and more.",
-      tech: ["React.js", "typescript", "javascript", "GIT", "Figma",],
+      tech: ["React.js", "typescript", "javascript", "GIT", "Figma"],
       image: "/solar.png",
-     // link: "https://medical-annotation-platform.example.com"
     },
     {
       title: "A Movie app using Flutter",
@@ -70,20 +231,20 @@ export default function Portfolio() {
       image: "/flutter.png",
     },
     {
-      title: "Unity Project - Created a communication AR application for blind and deaf people.",
+      title: "Unity AR Communication Application",
       description: "Developed an augmented reality mobile application to support communication for blind and deaf individuals. Built using Unity with C#, the app focused on accessibility and inclusion. Worked collaboratively in an Agile team, contributing to both design and development, and delivered a functional prototype tailored for diverse user needs.",
       tech: ["Unity", "C#", "Figma", "Firebase", "Agile"],
       image: "/unity.png",
     },
     {
       title: "Advanced Software Modelling and Simulation Project (Java)",
-      description: "Developed a console-based, multithreaded Java simulation to model rush-hour traffic flow through a configurable road network with traffic-light–controlled intersections, custom thread-safe buffers, and real-time reporting",
+      description: "Developed a console-based, multithreaded Java simulation to model rush-hour traffic flow through a configurable road network with traffic-light–controlled intersections, custom thread-safe buffers, and real-time reporting.",
       tech: ["Java", "Concurrency", "Threads", "Simulation Design"],
       image: "/java.png",
     },
     {
       title: "Tasty BYTES Mobile App – UX Design Project",
-      description: "Designed a mobile food-ordering app prototype for UCLan students and staff, focused on improving lunchtime efficiency. Created detailed user personas, low-fidelity wireframes, and a high-fidelity interactive prototype using Figma. The design addressed core UX requirements such as vendor listings based on real-time availability, filtered food menus, order tracking, and sustainable packaging representation. Justified design choices through annotations and user-centered design principles, supported by relevant UX research and design guidelines.",
+      description: "Designed a mobile food-ordering app prototype for UCLan students and staff, focused on improving lunchtime efficiency. Created detailed user personas, low-fidelity wireframes, and a high-fidelity interactive prototype using Figma. The design addressed core UX requirements such as vendor listings, filtered menus, order tracking, and sustainable packaging representation.",
       tech: ["Figma", "UI/UX principles"],
       image: "/ui.png",
     },
@@ -103,6 +264,7 @@ export default function Portfolio() {
     "CSS",
     "REST APIs",
   ]
+  
   const databases = [
     "MongoDB",
     "PostgreSQL",
@@ -136,482 +298,630 @@ export default function Portfolio() {
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-950 text-slate-200 overflow-hidden">
-      {/* Subtle Mouse Follow Gradient */}
+    <div className="min-h-screen bg-gradient-to-b from-[#124c7a] via-[#0b3353] to-[#072138] text-slate-200 overflow-x-hidden font-sans relative">
+      
+      {/* Scroll Progress Bar */}
       <div
-        className="fixed inset-0 pointer-events-none opacity-50"
+        className="fixed top-0 left-0 h-1 bg-gradient-to-r from-sky-400 via-blue-400 to-indigo-500 z-50 transition-all duration-75 scroll-progress-glow"
+        style={{ width: `${scrollProgress}%` }}
+      />
+
+      {/* Glassmorphic Sticky Header / Navbar */}
+      <header className="fixed top-4 left-1/2 transform -translate-x-1/2 z-40 w-[90%] max-w-3xl rounded-full border border-[#1a5e95]/30 bg-[#124c7a]/60 backdrop-blur-md px-4 py-2.5 flex justify-between items-center shadow-lg shadow-black/10 transition-all duration-300">
+        <div 
+          className="text-white font-bold tracking-tight text-lg cursor-pointer pl-2 hover:text-sky-300 transition-colors"
+          onClick={() => scrollToSection("home")}
+        >
+         
+        </div>
+        <nav className="flex space-x-1 sm:space-x-2">
+          {["home", "projects", "education", "skills", "contact"].map((sec) => (
+            <button
+              key={sec}
+              onClick={() => scrollToSection(sec)}
+              className={`px-3 py-1.5 rounded-full text-xs sm:text-sm font-medium transition-all duration-300 capitalize ${
+                activeSection === sec
+                  ? "bg-[#1a5e95] text-white shadow-md shadow-sky-500/10"
+                  : "text-slate-300 hover:text-white hover:bg-white/5"
+              }`}
+            >
+              {sec}
+            </button>
+          ))}
+        </nav>
+      </header>
+
+      {/* Background Dot Grid Overlay with Parallax Motion */}
+      <div 
+        className="fixed inset-0 pointer-events-none bg-grid-dots z-0 opacity-70"
         style={{
-          background: `radial-gradient(600px circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(59,130,246,0.15), transparent 50%)`,
+          transform: `translate(${mousePosition.x * 0.008}px, ${mousePosition.y * 0.008}px)`,
         }}
       />
 
-      {/* Floating Particles */}
-      <div className="fixed inset-0 pointer-events-none">
-        {[...Array(18)].map((_, i) => (
+      {/* Ambient Mouse Glow Tracker */}
+      <div
+        className="fixed inset-0 pointer-events-none opacity-40 z-0"
+        style={{
+          background: `radial-gradient(700px circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(56, 189, 248, 0.15), transparent 50%)`,
+        }}
+      />
+
+      {/* Ambient Floating Particle Parallax background */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        {particles.map((p) => (
           <div
-            key={i}
-            className="absolute w-2 h-2 rounded-full animate-pulse opacity-50"
+            key={p.id}
+            className="absolute rounded-full animate-pulse opacity-25"
             style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 3}s`,
-              transform: `translate(${mousePosition.x * 0.012}px, ${mousePosition.y * 0.012}px)`,
-              backgroundColor: i % 4 === 0 ? '#60A5FA' : i % 4 === 1 ? '#818CF8' : i % 4 === 2 ? '#38BDF8' : '#A78BFA',
+              left: p.left,
+              top: p.top,
+              width: `${p.size}px`,
+              height: `${p.size}px`,
+              animationDelay: p.delay,
+              transform: `translate(${mousePosition.x * p.speedFactor}px, ${mousePosition.y * p.speedFactor}px)`,
+              backgroundColor: p.color,
             }}
           />
         ))}
       </div>
 
+      {/* Ambient Large Floating Blurs */}
+      <div className="absolute top-[20%] left-[-10%] w-[350px] h-[350px] rounded-full bg-blue-500/10 blur-[120px] pointer-events-none animate-float-slow" />
+      <div className="absolute top-[60%] right-[-10%] w-[400px] h-[400px] rounded-full bg-indigo-500/10 blur-[130px] pointer-events-none animate-float-medium" />
+
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center px-6">
-        <div
-          className="text-center space-y-6 transform transition-transform duration-300"
-          style={{
-            transform: `translate(${mousePosition.x * 0.006}px, ${mousePosition.y * 0.006}px)`,
-          }}
-        >
-          {/* Profile Photo */}
-          <div className="w-52 h-52 mx-auto rounded-full bg-gradient-to-br from-blue-500 via-indigo-500 to-violet-500 p-1 mb-6 overflow-hidden shadow-lg shadow-blue-500/20">
-            <img
-              src="/pic.png"
-              alt="Profile Photo"
-              className="w-full h-full rounded-full object-cover bg-slate-800"
-            />
-          </div>
+      <section id="home" className="relative min-h-screen flex items-center justify-center px-6 pt-20 z-10">
+        <div className="text-center space-y-6 max-w-3xl">
+          
+          {/* Profile Photo with Interactive Border Effect */}
+          <ScrollReveal direction="scale" duration={1000}>
+            <div className="w-48 h-48 sm:w-52 sm:h-52 mx-auto rounded-full bg-gradient-to-br from-sky-400 via-[#1a5e95] to-indigo-500 p-1 mb-4 overflow-hidden shadow-xl shadow-sky-500/10 hover:scale-105 transition-transform duration-500 group relative">
+              <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+              <img
+                src="/pic.png"
+                alt="Profile Photo"
+                className="w-full h-full rounded-full object-cover bg-slate-800"
+              />
+            </div>
+          </ScrollReveal>
 
-          <h1 className="text-5xl md:text-7xl font-bold text-white mb-2">
-            Mehara Udawatte
-          </h1>
+          {/* Heading - Mehara Udawatte */}
+          <ScrollReveal direction="up" delay={200} duration={800}>
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight text-white mb-2">
+              Mehara Udawatte
+            </h1>
+          </ScrollReveal>
 
-          <p className="text-xl md:text-2xl text-blue-400 font-medium">Software Engineer</p>
+          {/* Subheading - Interactive Typing Animation */}
+          <ScrollReveal direction="up" delay={400} duration={800}>
+            <div className="text-lg sm:text-xl md:text-2xl font-medium tracking-wide text-sky-300 min-h-[36px] flex justify-center items-center">
+              <span>I&apos;m a </span>
+              <span className="ml-2 border-r-2 border-sky-400 pr-1 animate-pulse font-semibold">
+                {typedText}
+              </span>
+            </div>
+          </ScrollReveal>
 
-          <p className="text-base text-slate-400 max-w-xl mx-auto leading-relaxed">
-            I am a passionate Software Engineer who enjoys designing and building efficient software
-            solutions. I like solving problems through coding and creating applications that are useful and
-            reliable. I am always interested in learning new technologies and improving my skills to become a
-            better developer.
-          </p>
+          {/* Hero Paragraph description */}
+          <ScrollReveal direction="up" delay={550} duration={800}>
+            <p className="text-sm sm:text-base text-slate-300 max-w-xl mx-auto leading-relaxed">
+              I am a passionate Software Engineer who enjoys designing and building efficient software
+              solutions. I like solving problems through coding and creating applications that are useful and
+              reliable. I am always interested in learning new technologies and improving my skills to become a
+              better developer.
+            </p>
+          </ScrollReveal>
 
-          {/* Navigation Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
-            <Button
-              onClick={() => scrollToSection("projects")}
-              size="lg"
-              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-3 text-base font-medium transform hover:scale-105 transition-all duration-300 shadow-lg shadow-blue-500/25"
-            >
-              <Eye className="w-5 h-5 mr-2" />
-              View My Work
-            </Button>
+          {/* Navigation Buttons with Magnetic Pull Effects */}
+          <ScrollReveal direction="up" delay={700} duration={800}>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
+              <MagneticButton
+                onClick={() => scrollToSection("projects")}
+                size="lg"
+                className="bg-gradient-to-r from-sky-500 to-[#1a5e95] hover:from-sky-600 hover:to-blue-700 text-white px-8 py-3 text-base font-medium shadow-lg shadow-sky-500/10 cursor-pointer"
+              >
+                <Eye className="w-5 h-5 mr-2 animate-bounce" />
+                View My Work
+              </MagneticButton>
 
-            <Button
-              onClick={() => scrollToSection("contact")}
-              size="lg"
-              variant="outline"
-              className="border-2 border-blue-500/50 text-blue-400 hover:bg-blue-500/10 px-8 py-3 text-base font-medium transform hover:scale-105 transition-all duration-300 bg-transparent"
-            >
-              <MessageCircle className="w-5 h-5 mr-2" />
-              Get In Touch
-            </Button>
-          </div>
+              <MagneticButton
+                onClick={() => scrollToSection("contact")}
+                size="lg"
+                variant="outline"
+                className="border-2 border-sky-400/40 text-sky-300 hover:bg-sky-400/10 px-8 py-3 text-base font-medium bg-transparent cursor-pointer"
+              >
+                <MessageCircle className="w-5 h-5 mr-2" />
+                Get In Touch
+              </MagneticButton>
+            </div>
+          </ScrollReveal>
         </div>
 
-        {/* Scroll Indicator */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-          <div className="w-5 h-8 border-2 border-blue-500/50 rounded-full flex justify-center">
-            <div className="w-1 h-2 bg-blue-500 rounded-full mt-1.5 animate-pulse" />
+        {/* Scroll Down Indicator Icon - Advanced Double Chevron */}
+        <div 
+          className="absolute bottom-8 left-1/2 transform -translate-x-1/2 cursor-pointer flex flex-col items-center gap-1 group"
+          onClick={() => scrollToSection("projects")}
+        >
+          <span className="text-[10px] uppercase tracking-widest text-slate-400 group-hover:text-sky-300 transition-colors">Scroll Down</span>
+          <div className="flex flex-col items-center">
+            <ChevronDown className="w-5 h-5 text-sky-400 animate-bounce" />
+            <ChevronDown className="w-4 h-4 text-sky-400/60 -mt-3 animate-pulse" />
           </div>
         </div>
       </section>
 
       {/* Projects Section */}
-      <section id="projects" className="py-20 px-6 bg-slate-900/50">
+      <section id="projects" className="py-24 px-6 relative z-10 bg-slate-950/20">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-14 text-white">
-            Featured Projects
-          </h2>
+          
+          <ScrollReveal direction="up">
+            <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 text-white">
+              Featured Projects
+            </h2>
+            <div className="w-16 h-1 bg-sky-400 mx-auto mb-14 rounded-full" />
+          </ScrollReveal>
+
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {projects.map((project, index) => (
-              <Card
-                key={index}
-                className="bg-slate-800/50 border border-slate-700/50 hover:border-blue-500/50 transition-all duration-300 group hover:shadow-lg hover:shadow-blue-500/10"
-                style={{
-                  transform: `translateY(${Math.sin((mousePosition.x + index * 100) * 0.01) * 2}px)`,
-                }}
+              <ScrollReveal 
+                key={index} 
+                direction="up" 
+                delay={index * 100}
+                className="h-full"
               >
-                <CardContent className="p-5">
-                  <div
-                    className="aspect-video rounded-lg mb-4 overflow-hidden cursor-pointer bg-slate-700/50"
-                    onClick={() => setSelectedImage(project.image)}
-                  >
-                    <img
-                      src={project.image}
-                      alt={project.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                  </div>
-                  <h3 className="text-base font-semibold mb-2 text-slate-100 leading-tight">{project.title}</h3>
-                  <p className="text-slate-400 mb-3 text-sm leading-relaxed line-clamp-3">{project.description}</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {project.tech.map((tech, techIndex) => (
-                      <Badge
-                        key={techIndex}
-                        variant="secondary"
-                        className="bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 border-0 text-xs font-normal"
+                <TiltCard className="h-full rounded-2xl">
+                  <Card className="bg-slate-950/40 backdrop-blur-md border border-[#1a5e95]/30 hover:border-sky-400/50 hover:shadow-xl hover:shadow-sky-500/5 transition-all duration-300 group hover-edge-glow flex flex-col h-full overflow-hidden">
+                    <CardContent className="p-5 flex flex-col h-full">
+                      
+                      {/* Image Preview Container */}
+                      <div
+                        className="aspect-video rounded-lg mb-4 overflow-hidden cursor-pointer bg-slate-900/50 relative"
+                        onClick={() => setSelectedImage(project.image)}
                       >
-                        {tech}
-                      </Badge>
-                    ))}
-                  </div>
-                  {project.link && (
-                    <a
-                      href={project.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-block mt-3 text-blue-400 hover:text-blue-300 text-sm font-medium transition-colors"
-                    >
-                      Visit Project
-                    </a>
-                  )}
-                </CardContent>
-              </Card>
+                        <div className="absolute inset-0 bg-sky-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 flex items-center justify-center">
+                          <Eye className="w-8 h-8 text-white drop-shadow-md" />
+                        </div>
+<img
+  src={project.image}
+  alt={project.title}
+  className="w-full h-full object-cover transition-transform duration-300"
+/>
+                      </div>
+
+                      <h3 className="text-base sm:text-lg font-semibold mb-2 text-white leading-tight group-hover:text-sky-300 transition-colors">
+                        {project.title}
+                      </h3>
+                      
+                      <p className="text-slate-300 mb-4 text-xs sm:text-sm leading-relaxed flex-grow">
+                        {project.description}
+                      </p>
+
+                      <div className="flex flex-wrap gap-1.5 pt-2 mt-auto">
+                        {project.tech.map((tech, techIndex) => (
+                          <Badge
+                            key={techIndex}
+                            variant="secondary"
+                            className="bg-sky-400/10 text-sky-300 hover:bg-sky-400/20 border-0 text-[10px] sm:text-xs font-normal"
+                          >
+                            {tech}
+                          </Badge>
+                        ))}
+                      </div>
+
+                    </CardContent>
+                  </Card>
+                </TiltCard>
+              </ScrollReveal>
             ))}
           </div>
         </div>
       </section>
 
       {/* Education Section */}
-      <section className="py-20 px-6">
-        <div className="max-w-5xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-14 text-white">
-            Education
-          </h2>
-          <div className="space-y-6">
-            <Card className="bg-slate-800/50 border border-blue-500/30 hover:border-blue-500/50 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300">
-              <CardContent className="p-6">
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                  <div>
-                    <h3 className="text-lg font-semibold text-slate-100">Bachelor of Science in Software Engineering (Upper Second Class)</h3>
-                    <p className="text-blue-400 font-medium">University Of Lancashire</p>
-                    <p className="text-slate-400 text-sm mt-1">Relevant coursework: Data Structures, Algorithms, Software Engineering (Software Development Life Cycle, Agile Methodologies, System Design) </p>
-                  </div>
-                  <div className="text-right">
-                    <Badge variant="outline" className="border-blue-500/40 text-blue-300">2023 - 2025</Badge>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+      <section id="education" className="py-24 px-6 relative z-10">
+        <div className="max-w-4xl mx-auto">
+          
+          <ScrollReveal direction="up">
+            <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 text-white">
+              Education
+            </h2>
+            <div className="w-16 h-1 bg-sky-400 mx-auto mb-14 rounded-full" />
+          </ScrollReveal>
 
-          <Card className="bg-slate-800/50 border border-blue-500/30 hover:border-blue-500/50 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300">
-              <CardContent className="p-6">
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                  <div>
-                    <h3 className="text-lg font-semibold text-slate-100">Professional Qualification of Java Application Development using JavaSE</h3>
-                    <p className="text-blue-400 font-medium">University of Colombo School of Computing</p>
-                  </div>
-                  <div className="text-right">
-                    <Badge variant="outline" className="border-blue-500/40 text-blue-300">2024</Badge>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+          <div className="space-y-6 relative border-l-2 border-[#1a5e95]/40 pl-6 ml-4 sm:ml-6">
+            
+            {/* Education Card 1 */}
+            <ScrollReveal direction="left" delay={100}>
+              <div className="absolute -left-[31px] top-6 w-4 h-4 rounded-full bg-sky-400 border-4 border-[#124c7a] shadow-md shadow-sky-500/50" />
+              <TiltCard>
+                <Card className="bg-slate-950/40 backdrop-blur-md border border-[#1a5e95]/30 hover:border-sky-400/40 hover:shadow-lg hover:shadow-sky-500/5 transition-all duration-300 hover-edge-glow">
+                  <CardContent className="p-6">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                      <div>
+                        <h3 className="text-lg font-semibold text-white">Bachelor of Science in Software Engineering (Upper Second Class)</h3>
+                        <p className="text-sky-300 font-medium text-sm mt-0.5">University Of Lancashire</p>
+                        <p className="text-slate-300 text-xs sm:text-sm mt-2 font-normal leading-relaxed">
+                          Relevant coursework: Data Structures, Algorithms, Software Engineering (Software Development Life Cycle, Agile Methodologies, System Design)
+                        </p>
+                      </div>
+                      <div className="text-left md:text-right shrink-0">
+                        <Badge variant="outline" className="border-sky-400/40 text-sky-300 bg-sky-500/5">2023 - 2025</Badge>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TiltCard>
+            </ScrollReveal>
 
-            <Card className="bg-slate-800/50 border border-indigo-500/30 hover:border-indigo-500/50 hover:shadow-lg hover:shadow-indigo-500/10 transition-all duration-300">
-              <CardContent className="p-6">
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                  <div>
-                    <h3 className="text-lg font-semibold text-slate-100">GCE A/L</h3>
-                    <p className="text-indigo-400 font-medium">Sirimavo Bandaranaike Vidyalaya</p>
-                  </div>
-                  <div className="text-right">
-                    <Badge variant="outline" className="border-indigo-500/40 text-indigo-300">2022 (2023)</Badge>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            {/* Education Card 2 */}
+            <ScrollReveal direction="left" delay={200}>
+              <div className="absolute -left-[31px] top-6 w-4 h-4 rounded-full bg-sky-400 border-4 border-[#124c7a] shadow-md shadow-sky-500/50" />
+              <TiltCard>
+                <Card className="bg-slate-950/40 backdrop-blur-md border border-[#1a5e95]/30 hover:border-sky-400/40 hover:shadow-lg hover:shadow-sky-500/5 transition-all duration-300 hover-edge-glow">
+                  <CardContent className="p-6">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                      <div>
+                        <h3 className="text-lg font-semibold text-white">Professional Qualification of Java Application Development using JavaSE</h3>
+                        <p className="text-sky-300 font-medium text-sm mt-0.5">University of Colombo School of Computing</p>
+                      </div>
+                      <div className="text-left md:text-right shrink-0">
+                        <Badge variant="outline" className="border-sky-400/40 text-sky-300 bg-sky-500/5">2024</Badge>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TiltCard>
+            </ScrollReveal>
 
-            <Card className="bg-slate-800/50 border border-indigo-500/30 hover:border-indigo-500/50 hover:shadow-lg hover:shadow-indigo-500/10 transition-all duration-300">
-              <CardContent className="p-6">
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                  <div>
-                    <h3 className="text-lg font-semibold text-slate-100">GCE O/L</h3>
-                    <p className="text-indigo-400 font-medium">Sirimavo Bandaranaike Vidyalaya</p>
-                  </div>
-                  <div className="text-right">
-                    <Badge variant="outline" className="border-indigo-500/40 text-indigo-300">2019</Badge>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            {/* Education Card 3 */}
+            <ScrollReveal direction="left" delay={300}>
+              <div className="absolute -left-[31px] top-6 w-4 h-4 rounded-full bg-indigo-400 border-4 border-[#124c7a] shadow-md shadow-indigo-500/50" />
+              <TiltCard>
+                <Card className="bg-slate-950/40 backdrop-blur-md border border-[#1a5e95]/30 hover:border-indigo-400/40 hover:shadow-lg hover:shadow-indigo-500/5 transition-all duration-300 hover-edge-glow">
+                  <CardContent className="p-6">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                      <div>
+                        <h3 className="text-lg font-semibold text-white">GCE A/L</h3>
+                        <p className="text-indigo-300 font-medium text-sm mt-0.5">Sirimavo Bandaranaike Vidyalaya</p>
+                      </div>
+                      <div className="text-left md:text-right shrink-0">
+                        <Badge variant="outline" className="border-indigo-400/40 text-indigo-300 bg-indigo-500/5">2022 (2023)</Badge>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TiltCard>
+            </ScrollReveal>
+
+            {/* Education Card 4 */}
+            <ScrollReveal direction="left" delay={400}>
+              <div className="absolute -left-[31px] top-6 w-4 h-4 rounded-full bg-indigo-400 border-4 border-[#124c7a] shadow-md shadow-indigo-500/50" />
+              <TiltCard>
+                <Card className="bg-slate-950/40 backdrop-blur-md border border-[#1a5e95]/30 hover:border-indigo-400/40 hover:shadow-lg hover:shadow-indigo-500/5 transition-all duration-300 hover-edge-glow">
+                  <CardContent className="p-6">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                      <div>
+                        <h3 className="text-lg font-semibold text-white">GCE O/L</h3>
+                        <p className="text-indigo-300 font-medium text-sm mt-0.5">Sirimavo Bandaranaike Vidyalaya</p>
+                      </div>
+                      <div className="text-left md:text-right shrink-0">
+                        <Badge variant="outline" className="border-indigo-400/40 text-indigo-300 bg-indigo-500/5">2019</Badge>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TiltCard>
+            </ScrollReveal>
           </div>
         </div>
       </section>
 
       {/* Skills Section */}
-      <section className="py-20 px-6 bg-slate-900/50">
+      <section id="skills" className="py-24 px-6 relative z-10 bg-slate-950/20">
         <div className="max-w-5xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-14 text-white">
-            Skills & Expertise
-          </h2>
+          
+          <ScrollReveal direction="up">
+            <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 text-white">
+              Skills & Expertise
+            </h2>
+            <div className="w-16 h-1 bg-sky-400 mx-auto mb-14 rounded-full" />
+          </ScrollReveal>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* Technical Skills */}
-            <Card className="bg-slate-800/50 border border-blue-500/30 hover:border-blue-500/50 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300">
-              <CardContent className="p-5">
-                <div className="flex items-center mb-4">
-                  <div className="w-9 h-9 rounded-full bg-blue-500/20 flex items-center justify-center mr-3">
-                    <Code className="w-4 h-4 text-blue-400" />
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            
+            {/* Technical Skills Card */}
+            <ScrollReveal direction="up" delay={100} className="h-full">
+              <Card className="bg-slate-950/40 backdrop-blur-md border border-[#1a5e95]/30 hover:border-sky-400/40 hover:shadow-lg hover:shadow-sky-500/5 transition-all duration-300 hover-edge-glow h-full">
+                <CardContent className="p-5 flex flex-col h-full">
+                  <div className="flex items-center mb-4">
+                    <div className="w-9 h-9 rounded-full bg-sky-500/10 flex items-center justify-center mr-3">
+                      <Code className="w-4 h-4 text-sky-400" />
+                    </div>
+                    <h3 className="text-base sm:text-lg font-semibold text-white">Technical Skills</h3>
                   </div>
-                  <h3 className="text-lg font-semibold text-slate-100">Technical Skills</h3>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {technicalSkills.map((skill, index) => (
-                    <Badge
-                      key={index}
-                      variant="outline"
-                      className="border-blue-500/40 text-blue-300 hover:bg-blue-500/20 transition-colors text-xs"
-                    >
-                      {skill}
-                    </Badge>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+                  <div className="flex flex-wrap gap-2 mt-auto">
+                    {technicalSkills.map((skill, index) => (
+                      <Badge
+                        key={index}
+                        variant="outline"
+                        className="border-sky-400/30 text-sky-300 hover:bg-sky-400/10 transition-colors text-xs font-normal"
+                      >
+                        {skill}
+                      </Badge>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </ScrollReveal>
 
-            {/* Tools & Platforms */}
-            <Card className="bg-slate-800/50 border border-indigo-500/30 hover:border-indigo-500/50 hover:shadow-lg hover:shadow-indigo-500/10 transition-all duration-300">
-              <CardContent className="p-5">
-                <div className="flex items-center mb-4">
-                  <div className="w-9 h-9 rounded-full bg-indigo-500/20 flex items-center justify-center mr-3">
-                    <Database className="w-4 h-4 text-indigo-400" />
+            {/* Tools & Platforms Card */}
+            <ScrollReveal direction="up" delay={200} className="h-full">
+              <Card className="bg-slate-950/40 backdrop-blur-md border border-[#1a5e95]/30 hover:border-indigo-400/40 hover:shadow-lg hover:shadow-indigo-500/5 transition-all duration-300 hover-edge-glow h-full">
+                <CardContent className="p-5 flex flex-col h-full">
+                  <div className="flex items-center mb-4">
+                    <div className="w-9 h-9 rounded-full bg-indigo-500/10 flex items-center justify-center mr-3">
+                      <Database className="w-4 h-4 text-indigo-400" />
+                    </div>
+                    <h3 className="text-base sm:text-lg font-semibold text-white">Tools & Platforms</h3>
                   </div>
-                  <h3 className="text-lg font-semibold text-slate-100">Tools & Platforms</h3>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {toolsPlatforms.map((tool, index) => (
-                    <Badge
-                      key={index}
-                      variant="outline"
-                      className="border-indigo-500/40 text-indigo-300 hover:bg-indigo-500/20 transition-colors text-xs"
-                    >
-                      {tool}
-                    </Badge>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+                  <div className="flex flex-wrap gap-2 mt-auto">
+                    {toolsPlatforms.map((tool, index) => (
+                      <Badge
+                        key={index}
+                        variant="outline"
+                        className="border-indigo-400/30 text-indigo-300 hover:bg-indigo-500/20 transition-colors text-xs font-normal"
+                      >
+                        {tool}
+                      </Badge>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </ScrollReveal>
 
-                        {/* Databases */}
-            <Card className="bg-slate-800/50 border border-cyan-500/30 hover:border-cyan-500/50 hover:shadow-lg hover:shadow-cyan-500/10 transition-all duration-300">
-              <CardContent className="p-5">
-                <div className="flex items-center mb-4">
-                  <div className="w-9 h-9 rounded-full bg-cyan-500/20 flex items-center justify-center mr-3">
-                    <Database className="w-4 h-4 text-cyan-400" />
+            {/* Databases Card */}
+            <ScrollReveal direction="up" delay={300} className="h-full">
+              <Card className="bg-slate-950/40 backdrop-blur-md border border-[#1a5e95]/30 hover:border-cyan-400/40 hover:shadow-lg hover:shadow-cyan-500/5 transition-all duration-300 hover-edge-glow h-full">
+                <CardContent className="p-5 flex flex-col h-full">
+                  <div className="flex items-center mb-4">
+                    <div className="w-9 h-9 rounded-full bg-cyan-500/10 flex items-center justify-center mr-3">
+                      <Database className="w-4 h-4 text-cyan-400" />
+                    </div>
+                    <h3 className="text-base sm:text-lg font-semibold text-white">Databases</h3>
                   </div>
-                  <h3 className="text-lg font-semibold text-slate-100">Databases</h3>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {databases.map((db, index) => (
-                    <Badge
-                      key={index}
-                      variant="outline"
-                      className="border-cyan-500/40 text-cyan-300 hover:bg-cyan-500/20 transition-colors text-xs"
-                    >
-                      {db}
-                    </Badge>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+                  <div className="flex flex-wrap gap-2 mt-auto">
+                    {databases.map((db, index) => (
+                      <Badge
+                        key={index}
+                        variant="outline"
+                        className="border-cyan-400/30 text-cyan-300 hover:bg-cyan-400/10 transition-colors text-xs font-normal"
+                      >
+                        {db}
+                      </Badge>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </ScrollReveal>
 
-            {/* Soft Skills */}
-            <Card className="bg-slate-800/50 border border-violet-500/30 hover:border-violet-500/50 hover:shadow-lg hover:shadow-violet-500/10 transition-all duration-300">
-              <CardContent className="p-5">
-                <div className="flex items-center mb-4">
-                  <div className="w-9 h-9 rounded-full bg-violet-500/20 flex items-center justify-center mr-3">
-                    <Users className="w-4 h-4 text-violet-400" />
+            {/* Soft Skills Card */}
+            <ScrollReveal direction="up" delay={400} className="h-full">
+              <Card className="bg-slate-950/40 backdrop-blur-md border border-[#1a5e95]/30 hover:border-violet-400/40 hover:shadow-lg hover:shadow-violet-500/5 transition-all duration-300 hover-edge-glow h-full">
+                <CardContent className="p-5 flex flex-col h-full">
+                  <div className="flex items-center mb-4">
+                    <div className="w-9 h-9 rounded-full bg-violet-500/10 flex items-center justify-center mr-3">
+                      <Users className="w-4 h-4 text-violet-400" />
+                    </div>
+                    <h3 className="text-base sm:text-lg font-semibold text-white">Soft Skills</h3>
                   </div>
-                  <h3 className="text-lg font-semibold text-slate-100">Soft Skills</h3>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {softSkills.map((skill, index) => (
-                    <Badge
-                      key={index}
-                      variant="outline"
-                      className="border-violet-500/40 text-violet-300 hover:bg-violet-500/20 transition-colors text-xs"
-                    >
-                      {skill}
-                    </Badge>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+                  <div className="flex flex-wrap gap-2 mt-auto">
+                    {softSkills.map((skill, index) => (
+                      <Badge
+                        key={index}
+                        variant="outline"
+                        className="border-violet-400/30 text-violet-300 hover:bg-violet-500/20 transition-colors text-xs font-normal"
+                      >
+                        {skill}
+                      </Badge>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </ScrollReveal>
+
           </div>
         </div>
       </section>
 
-
-      {/* Let's Work Together Section */}
-      <section className="py-20 px-6 bg-slate-900/50">
-        <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">
-            Let&apos;s Work Together
-          </h2>
-          <p className="text-base text-slate-400 mb-10 max-w-xl mx-auto">
-            Ready to bring your ideas to life? Let&apos;s collaborate and create something amazing together.
-          </p>
-
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-
-            <Button
+      {/* Collaboration Banner / Let's Work Together with Magnetic Button */}
+      <section className="py-24 px-6 relative z-10">
+        <ScrollReveal direction="scale">
+          <div className="max-w-4xl mx-auto text-center bg-gradient-to-r from-sky-500/15 via-[#1a5e95]/20 to-indigo-500/15 border border-[#1a5e95]/40 rounded-3xl p-10 backdrop-blur-md shadow-xl">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">
+              Let&apos;s Work Together
+            </h2>
+            <p className="text-sm sm:text-base text-slate-300 mb-8 max-w-xl mx-auto leading-relaxed">
+              Ready to bring your ideas to life? Let&apos;s collaborate and create something amazing together.
+            </p>
+            <MagneticButton
               onClick={() => scrollToSection("contact")}
               size="lg"
-              variant="outline"
-              className="border-2 border-indigo-500/50 text-indigo-400 hover:bg-indigo-500/10 px-8 py-3 text-base font-medium transform hover:scale-105 transition-all duration-300 bg-transparent"
+              className="bg-gradient-to-r from-sky-500 to-[#1a5e95] hover:from-sky-600 hover:to-blue-700 text-white px-8 py-3 text-base font-medium shadow-md shadow-sky-500/10 cursor-pointer"
             >
-              <Send className="w-5 h-5 mr-2" />
+              <Send className="w-5 h-5 mr-2 animate-pulse" />
               Send Message
-            </Button>
+            </MagneticButton>
           </div>
-        </div>
+        </ScrollReveal>
       </section>
 
-      {/* Contact Form Section */}
-      <section id="contact" className="py-20 px-6">
+      {/* Contact Section */}
+      <section id="contact" className="py-24 px-6 relative z-10">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-14 text-white">
-            Get In Touch
-          </h2>
+          
+          <ScrollReveal direction="up">
+            <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 text-white">
+              Get In Touch
+            </h2>
+            <div className="w-16 h-1 bg-sky-400 mx-auto mb-14 rounded-full" />
+          </ScrollReveal>
+
           <div className="grid md:grid-cols-2 gap-10">
-            <div className="space-y-6">
-              <h3 className="text-xl font-semibold text-slate-100">Let&apos;s Connect</h3>
-              <p className="text-slate-400 leading-relaxed">
+            
+            {/* Contact Information */}
+            <ScrollReveal direction="right" className="space-y-6">
+              <h3 className="text-xl font-semibold text-white">Let&apos;s Connect</h3>
+              <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
                 I&apos;m always interested in hearing about new opportunities and exciting projects. Whether you have a question or just want to say hi, feel free to reach out!
               </p>
-              <div className="space-y-4">
-                <div className="flex items-center space-x-4 text-slate-300 hover:text-blue-400 transition-colors">
-                  <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
-                    <Mail className="w-4 h-4 text-blue-400" />
+              
+              <div className="space-y-4 pt-2">
+                
+                <div className="flex items-center space-x-4 text-slate-300 hover:text-sky-300 transition-colors group">
+                  <div className="w-10 h-10 rounded-full bg-sky-500/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                    <Mail className="w-4 h-4 text-sky-400" />
                   </div>
-                  <span className="text-sm">meharaudawatte@gmail.com</span>
+                  <span className="text-sm sm:text-base font-medium">meharaudawatte@gmail.com</span>
                 </div>
-                <div className="flex items-center space-x-4 text-slate-300 hover:text-indigo-400 transition-colors">
-                  <div className="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center">
+                
+                <div className="flex items-center space-x-4 text-slate-300 hover:text-indigo-300 transition-colors group">
+                  <div className="w-10 h-10 rounded-full bg-indigo-500/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                     <Phone className="w-4 h-4 text-indigo-400" />
                   </div>
-                  <span className="text-sm">+94 76 554 0319</span>
+                  <span className="text-sm sm:text-base font-medium">+94 76 554 0319</span>
                 </div>
-                <div className="flex items-center space-x-4 text-slate-300 hover:text-violet-400 transition-colors">
-                  <div className="w-10 h-10 rounded-full bg-violet-500/20 flex items-center justify-center">
+                
+                <div className="flex items-center space-x-4 text-slate-300 hover:text-violet-300 transition-colors group">
+                  <div className="w-10 h-10 rounded-full bg-violet-500/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                     <MapPin className="w-4 h-4 text-violet-400" />
                   </div>
-                  <span className="text-sm">Colombo, Sri Lanka</span>
+                  <span className="text-sm sm:text-base font-medium">Colombo, Sri Lanka</span>
                 </div>
+
               </div>
-              <div className="flex space-x-3 pt-2">
+
+              {/* Social Media Link Buttons */}
+              <div className="flex space-x-3 pt-4">
                 <a href="https://www.linkedin.com/in/mehara-udawatte" target="_blank" rel="noopener noreferrer">
-                  <Button size="sm" variant="outline" className="border-blue-500/40 text-blue-400 hover:bg-blue-500/20 h-9 w-9 p-0 bg-transparent">
+                  <Button size="sm" variant="outline" className="border-sky-400/30 text-sky-300 hover:bg-sky-400/20 h-10 w-10 p-0 bg-transparent rounded-full hover:scale-110 hover:border-sky-400 transition-all duration-300">
                     <Linkedin className="w-4 h-4" />
                   </Button>
                 </a>
                 <a href="https://www.instagram.com/mehaa.ra?igsh=NmV5eXRnbG9mNXJk&utm_source=qr" target="_blank" rel="noopener noreferrer">
-                  <Button size="sm" variant="outline" className="border-indigo-500/40 text-indigo-400 hover:bg-indigo-500/20 h-9 w-9 p-0 bg-transparent">
+                  <Button size="sm" variant="outline" className="border-indigo-400/30 text-indigo-300 hover:bg-indigo-500/20 h-10 w-10 p-0 bg-transparent rounded-full hover:scale-110 hover:border-indigo-400 transition-all duration-300">
                     <Instagram className="w-4 h-4" />
                   </Button>
                 </a>
                 <a href="https://github.com/mehara2003" target="_blank" rel="noopener noreferrer">
-                  <Button size="sm" variant="outline" className="border-slate-500/40 text-slate-400 hover:bg-slate-500/20 h-9 w-9 p-0 bg-transparent">
+                  <Button size="sm" variant="outline" className="border-slate-500/30 text-slate-300 hover:bg-slate-500/20 h-10 w-10 p-0 bg-transparent rounded-full hover:scale-110 hover:border-slate-300 transition-all duration-300">
                     <Github className="w-4 h-4" />
                   </Button>
                 </a>
               </div>
-            </div>
+            </ScrollReveal>
 
-            <Card className="bg-slate-800/50 border border-slate-700/50 shadow-lg">
-              <CardContent className="p-5">
-                <form action="https://api.web3forms.com/submit" method="POST" className="space-y-4">
-
-                <input
-                  type="hidden"
-                  name="access_key"
-                  value="b005c4fb-b4b4-477d-88e7-1edf3fe5a07f"
-                />
-                <input type="hidden" name="subject" value="New Portfolio Message" />
-                <input type="hidden" name="from_name" value="Portfolio Website" />
-
-                <div className="grid grid-cols-2 gap-3">
-                    <Input
-                      name="first_name"
-                      value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
-                      placeholder="First Name"
-                      className="bg-slate-700/50 border-slate-600/50 text-slate-200 placeholder:text-slate-500 focus:border-blue-500/50 focus:ring-blue-500/20 text-sm"
+            {/* Form Container */}
+            <ScrollReveal direction="left">
+              <Card className="bg-slate-950/40 backdrop-blur-md border border-[#1a5e95]/30 shadow-xl hover-edge-glow">
+                <CardContent className="p-5">
+                  <form action="https://api.web3forms.com/submit" method="POST" className="space-y-4">
+                    
+                    <input
+                      type="hidden"
+                      name="access_key"
+                      value="b005c4fb-b4b4-477d-88e7-1edf3fe5a07f"
                     />
+                    <input type="hidden" name="subject" value="New Portfolio Message" />
+                    <input type="hidden" name="from_name" value="Portfolio Website" />
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <Input
+                        name="first_name"
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        placeholder="First Name"
+                        required
+                        className="bg-slate-900/50 border-slate-700/50 text-white placeholder:text-slate-500 focus:border-sky-400/50 focus:ring-sky-400/20 text-sm rounded-lg transition-all focus:scale-[1.01]"
+                      />
+                      <Input
+                        name="last_name"
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                        placeholder="Last Name"
+                        className="bg-slate-900/50 border-slate-700/50 text-white placeholder:text-slate-500 focus:border-sky-400/50 focus:ring-sky-400/20 text-sm rounded-lg transition-all focus:scale-[1.01]"
+                      />
+                    </div>
+                    
                     <Input
-                      name="last_name"
-                      value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
-                      placeholder="Last Name"
-                      className="bg-slate-700/50 border-slate-600/50 text-slate-200 placeholder:text-slate-500 focus:border-blue-500/50 focus:ring-blue-500/20 text-sm"
+                      name="email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="Email Address"
+                      required
+                      className="bg-slate-900/50 border-slate-700/50 text-white placeholder:text-slate-500 focus:border-sky-400/50 focus:ring-sky-400/20 text-sm rounded-lg transition-all focus:scale-[1.01]"
                     />
-                  </div>
-                  <Input
-                    name="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Email Address"
-                    className="bg-slate-700/50 border-slate-600/50 text-slate-200 placeholder:text-slate-500 focus:border-blue-500/50 focus:ring-blue-500/20 text-sm"
-                  />
-                  <Input
-                    name="subject"
-                    value={subject}
-                    onChange={(e) => setSubject(e.target.value)}
-                    placeholder="Subject"
-                    className="bg-slate-700/50 border-slate-600/50 text-slate-200 placeholder:text-slate-500 focus:border-blue-500/50 focus:ring-blue-500/20 text-sm"
-                  />
-                  <Textarea
-                    name="message"
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    placeholder="Your Message"
-                    rows={4}
-                    className="bg-slate-700/50 border-slate-600/50 text-slate-200 placeholder:text-slate-500 focus:border-blue-500/50 focus:ring-blue-500/20 resize-none text-sm"
-                  />
-                  <Button
-                    type="submit"
-                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium py-2.5 transform hover:scale-[1.02] transition-all duration-300"
-                  >
-                    <Send className="w-4 h-4 mr-2" />
-                    Send Message
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
+                    
+                    <Input
+                      name="subject"
+                      value={subject}
+                      onChange={(e) => setSubject(e.target.value)}
+                      placeholder="Subject"
+                      required
+                      className="bg-slate-900/50 border-slate-700/50 text-white placeholder:text-slate-500 focus:border-sky-400/50 focus:ring-sky-400/20 text-sm rounded-lg transition-all focus:scale-[1.01]"
+                    />
+                    
+                    <Textarea
+                      name="message"
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      placeholder="Your Message"
+                      rows={4}
+                      required
+                      className="bg-slate-900/50 border-slate-700/50 text-white placeholder:text-slate-500 focus:border-sky-400/50 focus:ring-sky-400/20 resize-none text-sm rounded-lg transition-all focus:scale-[1.01]"
+                    />
+
+                    <MagneticButton
+                      type="submit"
+                      className="w-full bg-gradient-to-r from-sky-500 to-[#1a5e95] hover:from-sky-600 hover:to-blue-700 text-white font-medium py-2.5 rounded-lg shadow-md cursor-pointer"
+                    >
+                      <Send className="w-4 h-4 mr-2" />
+                      Send Message
+                    </MagneticButton>
+                  </form>
+                </CardContent>
+              </Card>
+            </ScrollReveal>
+
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="py-6 px-6 border-t border-slate-800">
-        <div className="max-w-5xl mx-auto text-center">
-          <p className="text-slate-500 text-sm">© 2025 Mehara Udawatte. All rights reserved</p>
+      <footer className="py-8 px-6 border-t border-[#1a5e95]/20 bg-slate-950/40 relative z-10">
+        <div className="max-w-5xl mx-auto text-center space-y-2">
+          <p className="text-slate-400 text-sm">© 2026 Mehara Udawatte. All rights reserved.</p>
         </div>
       </footer>
 
-      {/* Image Modal */}
+      {/* Image Modal Preview */}
       {selectedImage && (
-        <div className="fixed inset-0 bg-black/70 flex justify-center items-center z-50">
-          <div className="relative max-w-3xl w-full mx-4">
+        <div 
+          className="fixed inset-0 bg-black/80 flex justify-center items-center z-50 p-4 backdrop-blur-sm transition-all duration-300"
+          onClick={() => setSelectedImage(null)}
+        >
+          <div className="relative max-w-3xl w-full mx-auto" onClick={(e) => e.stopPropagation()}>
             <img
               src={selectedImage}
               alt="Project preview"
-              className="w-full h-auto rounded-lg border-4 border-slate-700 shadow-2xl"
+              className="w-full h-auto rounded-lg border-2 border-sky-400/40 shadow-2xl"
             />
             <button
               onClick={() => setSelectedImage(null)}
-              className="absolute top-2 right-2 text-white text-lg bg-blue-600 hover:bg-blue-700 rounded-full w-8 h-8 flex items-center justify-center transition-colors"
+              className="absolute -top-12 right-0 text-white text-sm bg-sky-500 hover:bg-sky-600 rounded-full px-3 py-1 shadow-md hover:scale-105 transition-transform"
             >
-              x
+              Close
             </button>
           </div>
         </div>

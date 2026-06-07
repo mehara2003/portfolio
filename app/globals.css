@@ -116,5 +116,93 @@
 @layer base {
   body {
     margin: 0;
+    scroll-behavior: smooth;
   }
 }
+
+/* Custom easing curve for sleek entrance animations */
+.cubic-bezier-reveal {
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Mouse light tracker glow */
+.mouse-glow {
+  background: radial-gradient(800px circle at var(--x, 0px) var(--y, 0px), rgba(30, 110, 175, 0.25), transparent 50%);
+}
+
+/* Floating ambient elements animation */
+@keyframes float {
+  0% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-15px) rotate(180deg);
+  }
+  100% {
+    transform: translateY(0px) rotate(360deg);
+  }
+}
+
+.animate-float-slow {
+  animation: float 25s infinite linear;
+}
+
+.animate-float-medium {
+  animation: float 18s infinite linear;
+}
+
+.animate-float-fast {
+  animation: float 12s infinite linear;
+}
+
+/* Scroll progress bar glow */
+.scroll-progress-glow {
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.8), 0 0 5px rgba(56, 189, 248, 0.4);
+}
+
+/* Card hover edge glow */
+.hover-edge-glow {
+  position: relative;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hover-edge-glow::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.4), rgba(129, 140, 248, 0.1), transparent 50%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.hover-edge-glow:hover::before {
+  opacity: 1;
+}
+
+/* Pulse animation helper */
+@keyframes pulse-slow {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Moving grid background */
+.bg-grid-dots {
+  background-image: radial-gradient(rgba(56, 189, 248, 0.1) 1.5px, transparent 1.5px);
+  background-size: 30px 30px;
+}
+
+
