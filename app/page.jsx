@@ -298,7 +298,7 @@ export default function Portfolio() {
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#124c7a] via-[#0b3353] to-[#072138] text-slate-200 overflow-x-hidden font-sans relative">
+    <div className="min-h-screen bg-gradient-to-b from-[#0e192d] via-[#0e192d] to-[#091422] text-slate-200 overflow-x-hidden font-sans relative">
       
       {/* Scroll Progress Bar */}
       <div
@@ -406,10 +406,10 @@ export default function Portfolio() {
           {/* Hero Paragraph description */}
           <ScrollReveal direction="up" delay={550} duration={800}>
             <p className="text-sm sm:text-base text-slate-300 max-w-xl mx-auto leading-relaxed">
-              I am a passionate Software Engineer who enjoys designing and building efficient software
-              solutions. I like solving problems through coding and creating applications that are useful and
-              reliable. I am always interested in learning new technologies and improving my skills to become a
-              better developer.
+              Software Engineer who enjoys designing and building software solutions that are efficient, useful, 
+              and reliable. Loves solving problems through coding and turning ideas into practical applications. 
+              Always interested in learning new technologies, improving skills, and exploring better ways to create quality software.
+
             </p>
           </ScrollReveal>
 
@@ -482,11 +482,11 @@ export default function Portfolio() {
                         <div className="absolute inset-0 bg-sky-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 flex items-center justify-center">
                           <Eye className="w-8 h-8 text-white drop-shadow-md" />
                         </div>
-<img
-  src={project.image}
-  alt={project.title}
-  className="w-full h-full object-cover transition-transform duration-300"
-/>
+                    <img
+                      src={project.image}
+                      alt={project.title}
+                      className="w-full h-full object-cover transition-transform duration-300"
+                    />
                       </div>
 
                       <h3 className="text-base sm:text-lg font-semibold mb-2 text-white leading-tight group-hover:text-sky-300 transition-colors">
@@ -539,7 +539,7 @@ export default function Portfolio() {
                   <CardContent className="p-6">
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                       <div>
-                        <h3 className="text-lg font-semibold text-white">Bachelor of Science in Software Engineering (Upper Second Class)</h3>
+                        <h3 className="text-lg font-semibold text-white">Bachelor of Science in Software Engineering</h3>
                         <p className="text-sky-300 font-medium text-sm mt-0.5">University Of Lancashire</p>
                         <p className="text-slate-300 text-xs sm:text-sm mt-2 font-normal leading-relaxed">
                           Relevant coursework: Data Structures, Algorithms, Software Engineering (Software Development Life Cycle, Agile Methodologies, System Design)
