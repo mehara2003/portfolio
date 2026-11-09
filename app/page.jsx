@@ -1,62 +1,176 @@
 "use client"
 
 import ScrollReveal from "@/components/ScrollReveal"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-
 import {
-  ChevronDown,
+  ArrowRight,
+  ArrowUp,
+  ArrowUpRight,
   Code,
   Database,
-  Eye,
   Github,
   Instagram,
+  Layers,
   Linkedin,
   Mail,
   MapPin,
-  MessageCircle,
+  Maximize2,
   Phone,
   Send,
-  Users
+  Users,
+  X,
 } from "lucide-react"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
-// Reusable 3D Tilt Card Component for Projects and Education
-function TiltCard({ children, className, ...props }) {
-  const [style, setStyle] = useState({})
+/* ------------------------------------------------------------------ */
+/*  Content                                                            */
+/* ------------------------------------------------------------------ */
 
-  const handleMouseMove = (e) => {
-    const card = e.currentTarget
-    const rect = card.getBoundingClientRect()
-    const x = e.clientX - rect.left
-    const y = e.clientY - rect.top
-    const centerX = rect.width / 2
-    const centerY = rect.height / 2
-    const rotateX = ((centerY - y) / centerY) * 8 // Max 8 degrees tilt
-    const rotateY = ((x - centerX) / centerX) * 8
+const NAV_SECTIONS = ["home", "projects", "education", "skills", "contact"]
 
-    setStyle({
-      transform: `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`,
-      transition: "transform 0.1s ease-out",
-    })
+const ROLES = ["Software Engineer", "Full Stack Developer", "Problem Solver", "UI/UX Designer"]
+
+const PROJECTS = [
+  {
+    title: "Mammogram Report Interpretation Web App (Flask & NLP)",
+    description:
+      "A Flask/React web app secured with Firebase that uses a sequence-to-sequence NLP model to translate technical mammogram reports into plain, patient-friendly language in real time. Uploads are automatically deleted after processing to protect privacy, empowering non-medical users to understand their results instantly.",
+    tech: ["React.js", "python", "javascript", "Firebase", "Machine Learning", "Figma", "Natural Language Processing (NLP)"],
+    image: "/upload.png",
+  },
+  {
+    title: "Solar Website",
+    description:
+      "Developed a web application using React for a solar business with a user-friendly interface, featuring customer feedback, managed projects and more.",
+    tech: ["React.js", "typescript", "javascript", "GIT", "Figma"],
+    image: "/solar.png",
+  },
+  {
+    title: "A Movie app using Flutter",
+    description:
+      "Designed and built a responsive movie app using Flutter, integrating The Movie DB API and Firebase for backend data storage. Included features like personalized watchlists, local persistence, and intuitive UI design based on HCI principles. Implemented robust error handling and maintained version control throughout development, with a critical evaluation of design decisions.",
+    tech: ["Flutter", "Dart", "Firebase", "Figma", "Android Studio"],
+    image: "/flutter.png",
+  },
+  {
+    title: "Unity AR Communication Application",
+    description:
+      "Developed an augmented reality mobile application to support communication for blind and deaf individuals. Built using Unity with C#, the app focused on accessibility and inclusion. Worked collaboratively in an Agile team, contributing to both design and development, and delivered a functional prototype tailored for diverse user needs.",
+    tech: ["Unity", "C#", "Figma", "Firebase", "Agile"],
+    image: "/unity.png",
+  },
+  {
+    title: "Advanced Software Modelling and Simulation Project (Java)",
+    description:
+      "Developed a console-based, multithreaded Java simulation to model rush-hour traffic flow through a configurable road network with traffic-light–controlled intersections, custom thread-safe buffers, and real-time reporting.",
+    tech: ["Java", "Concurrency", "Threads", "Simulation Design"],
+    image: "/java.png",
+  },
+  {
+    title: "Tasty BYTES Mobile App – UX Design Project",
+    description:
+      "Designed a mobile food-ordering app prototype for UCLan students and staff, focused on improving lunchtime efficiency. Created detailed user personas, low-fidelity wireframes, and a high-fidelity interactive prototype using Figma. The design addressed core UX requirements such as vendor listings, filtered menus, order tracking, and sustainable packaging representation.",
+    tech: ["Figma", "UI/UX principles"],
+    image: "/ui.png",
+  },
+]
+
+const EDUCATION = [
+  {
+    title: "Bachelor of Science in Software Engineering",
+    school: "University Of Lancashire",
+    period: "2023 – 2025",
+    detail:
+      "Relevant coursework: Data Structures, Algorithms, Software Engineering (Software Development Life Cycle, Agile Methodologies, System Design)",
+    accent: "#7dd3fc",
+  },
+  {
+    title: "Professional Qualification of Java Application Development using JavaSE",
+    school: "University of Colombo School of Computing",
+    period: "2024",
+    accent: "#7dd3fc",
+  },
+  {
+    title: "GCE A/L",
+    school: "Sirimavo Bandaranaike Vidyalaya",
+    period: "2022 (2023)",
+    accent: "#a5b4fc",
+  },
+  {
+    title: "GCE O/L",
+    school: "Sirimavo Bandaranaike Vidyalaya",
+    period: "2019",
+    accent: "#a5b4fc",
+  },
+]
+
+const TECHNICAL_SKILLS = ["JavaScript", "typescript", "C++", "Python", "React", "Next.js", "C#", "Java", "Dart", "HTML", "CSS", "REST APIs"]
+const DATABASES = ["MongoDB", "PostgreSQL", "Firebase", "MySQL"]
+const TOOLS = ["Git", "GitHub", "Docker", "Unity", "Flutter", "Jupyter Notebook", "Canva", "Figma", "VS Code", "Android Studio"]
+const SOFT_SKILLS = [
+  "Problem Solving",
+  "Team Leadership",
+  "Communication",
+  "Project Management",
+  "Creative Thinking",
+  "Adaptability",
+  "Time Management",
+  "Collaboration",
+  "Organizational Skills",
+]
+
+const SKILL_GROUPS = [
+  { title: "Technical Skills", icon: Code, items: TECHNICAL_SKILLS, accent: "#7dd3fc" },
+  { title: "Tools & Platforms", icon: Layers, items: TOOLS, accent: "#a5b4fc" },
+  { title: "Databases", icon: Database, items: DATABASES, accent: "#67e8f9" },
+  { title: "Soft Skills", icon: Users, items: SOFT_SKILLS, accent: "#c4b5fd" },
+]
+
+const SOCIALS = [
+  { label: "LinkedIn", href: "https://www.linkedin.com/in/mehara-udawatte", icon: Linkedin },
+  { label: "Instagram", href: "https://www.instagram.com/mehaa.ra?igsh=NmV5eXRnbG9mNXJk&utm_source=qr", icon: Instagram },
+  { label: "GitHub", href: "https://github.com/mehara2003", icon: Github },
+]
+
+const CONTACTS = [
+  { label: "Email", value: "meharaudawatte@gmail.com", href: "mailto:meharaudawatte@gmail.com", icon: Mail, accent: "#7dd3fc" },
+  { label: "Phone", value: "+94 76 554 0319", href: "tel:+94765540319", icon: Phone, accent: "#a5b4fc" },
+  { label: "Location", value: "Colombo, Sri Lanka", icon: MapPin, accent: "#c4b5fd" },
+]
+
+/* ------------------------------------------------------------------ */
+/*  Small interactive building blocks                                  */
+/* ------------------------------------------------------------------ */
+
+// Card with a cursor-following spotlight + subtle 3D tilt (no React re-renders).
+function SpotlightCard({ children, className = "", tilt = true, style, ...props }) {
+  const ref = useRef(null)
+
+  const handleMove = (e) => {
+    const el = ref.current
+    if (!el) return
+    const r = el.getBoundingClientRect()
+    const x = e.clientX - r.left
+    const y = e.clientY - r.top
+    el.style.setProperty("--cx", `${x}px`)
+    el.style.setProperty("--cy", `${y}px`)
+    if (tilt) {
+      const rx = ((r.height / 2 - y) / (r.height / 2)) * 3.5
+      const ry = ((x - r.width / 2) / (r.width / 2)) * 3.5
+      el.style.transform = `perspective(1100px) rotateX(${rx}deg) rotateY(${ry}deg) translateY(-4px)`
+    }
   }
 
-  const handleMouseLeave = () => {
-    setStyle({
-      transform: "perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)",
-      transition: "transform 0.5s ease-in-out",
-    })
+  const handleLeave = () => {
+    if (ref.current) ref.current.style.transform = ""
   }
 
   return (
     <div
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
+      ref={ref}
+      onMouseMove={handleMove}
+      onMouseLeave={handleLeave}
+      className={`card ${className}`}
       style={style}
-      className={className}
       {...props}
     >
       {children}
@@ -64,48 +178,68 @@ function TiltCard({ children, className, ...props }) {
   )
 }
 
-// Reusable Magnetic Button Component
-function MagneticButton({ children, className, onClick, ...props }) {
-  const [style, setStyle] = useState({})
+// Button / link that is gently pulled toward the cursor.
+function MagneticButton({ as: Tag = "button", children, className = "", strength = 0.22, ...props }) {
+  const ref = useRef(null)
 
-  const handleMouseMove = (e) => {
-    const btn = e.currentTarget
-    const rect = btn.getBoundingClientRect()
-    const x = e.clientX - (rect.left + rect.width / 2)
-    const y = e.clientY - (rect.top + rect.height / 2)
-    
-    setStyle({
-      transform: `translate(${x * 0.22}px, ${y * 0.22}px)`,
-      transition: "transform 0.1s ease-out",
-    })
+  const handleMove = (e) => {
+    const el = ref.current
+    if (!el) return
+    const r = el.getBoundingClientRect()
+    const x = e.clientX - (r.left + r.width / 2)
+    const y = e.clientY - (r.top + r.height / 2)
+    el.style.transform = `translate3d(${x * strength}px, ${y * strength}px, 0)`
   }
 
-  const handleMouseLeave = () => {
-    setStyle({
-      transform: "translate(0px, 0px)",
-      transition: "transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)", // Elastic snap back
-    })
+  const handleLeave = () => {
+    if (ref.current) ref.current.style.transform = ""
   }
 
   return (
-    <Button
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      style={style}
-      onClick={onClick}
-      className={className}
-      {...props}
-    >
+    <Tag ref={ref} onMouseMove={handleMove} onMouseLeave={handleLeave} className={`magnetic ${className}`} {...props}>
       {children}
-    </Button>
+    </Tag>
   )
 }
 
+function SectionHeading({ index, eyebrow, title, accent, description }) {
+  return (
+    <ScrollReveal direction="up" className="text-center mb-16 md:mb-20">
+      <span className="eyebrow">
+        {index} — {eyebrow}
+      </span>
+      <h2 className="mt-5 font-serif text-4xl sm:text-5xl md:text-6xl leading-[1.05] tracking-tight text-white">
+        {title} <em className="text-gradient">{accent}</em>
+      </h2>
+      {description && (
+        <p className="mt-5 text-slate-400 text-sm sm:text-base max-w-xl mx-auto leading-relaxed">{description}</p>
+      )}
+    </ScrollReveal>
+  )
+}
+
+function SplitLetters({ text, baseDelay = 0 }) {
+  return (
+    <span aria-label={text} className="inline-block">
+      {text.split("").map((ch, i) => (
+        <span key={i} aria-hidden="true" className="letter" style={{ "--i": i, "--base": `${baseDelay}ms` }}>
+          {ch}
+        </span>
+      ))}
+    </span>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/*  Page                                                               */
+/* ------------------------------------------------------------------ */
+
 export default function Portfolio() {
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const [selectedImage, setSelectedImage] = useState(null)
-  const [scrollProgress, setScrollProgress] = useState(0)
   const [activeSection, setActiveSection] = useState("home")
+  const [scrolled, setScrolled] = useState(false)
+  const [roleIndex, setRoleIndex] = useState(0)
+  const [indicator, setIndicator] = useState({ left: 0, width: 0, ready: false })
 
   // Form states
   const [firstName, setFirstName] = useState("")
@@ -114,216 +248,154 @@ export default function Portfolio() {
   const [subject, setSubject] = useState("")
   const [message, setMessage] = useState("")
 
-  // Subheading Typing Animation States
-  const [typedText, setTypedText] = useState("")
-  const [roleIndex, setRoleIndex] = useState(0)
-  const [isDeleting, setIsDeleting] = useState(false)
-  const roles = useMemo(() => ["Software Engineer", "Full Stack Developer", "Problem Solver", "UI/UX Designer"], [])
+  const progressRef = useRef(null)
+  const timelineRef = useRef(null)
+  const navRefs = useRef({})
 
-  // Monitor mouse position
+  // Cursor spotlight — written straight to CSS variables, no re-renders.
   useEffect(() => {
-    const handleMouseMove = (e) => {
-      setMousePosition({ x: e.clientX, y: e.clientY })
+    let raf = 0
+    const onMove = (e) => {
+      cancelAnimationFrame(raf)
+      raf = requestAnimationFrame(() => {
+        const s = document.documentElement.style
+        s.setProperty("--mx", `${e.clientX}px`)
+        s.setProperty("--my", `${e.clientY}px`)
+      })
     }
-    window.addEventListener("mousemove", handleMouseMove)
-    return () => window.removeEventListener("mousemove", handleMouseMove)
+    window.addEventListener("pointermove", onMove, { passive: true })
+    return () => {
+      cancelAnimationFrame(raf)
+      window.removeEventListener("pointermove", onMove)
+    }
   }, [])
 
-  // Typing effect loop
+  // Rotating role line in the hero
   useEffect(() => {
-    let timer
-    const currentRole = roles[roleIndex]
-    const typingSpeed = isDeleting ? 40 : 100
+    const id = setInterval(() => setRoleIndex((i) => (i + 1) % ROLES.length), 2800)
+    return () => clearInterval(id)
+  }, [])
 
-    if (!isDeleting && typedText === currentRole) {
-      // Pause at full word
-      timer = setTimeout(() => setIsDeleting(true), 2200)
-    } else if (isDeleting && typedText === "") {
-      setIsDeleting(false)
-      setRoleIndex((prev) => (prev + 1) % roles.length)
-    } else {
-      timer = setTimeout(() => {
-        setTypedText(
-          isDeleting
-            ? currentRole.substring(0, typedText.length - 1)
-            : currentRole.substring(0, typedText.length + 1)
-        )
-      }, typingSpeed)
-    }
-
-    return () => clearTimeout(timer)
-  }, [typedText, isDeleting, roleIndex, roles])
-
-  // Monitor scroll progress and scroll spy active section
+  // Scroll: progress bar, header state, timeline drawing, scroll spy
   useEffect(() => {
-    const handleScroll = () => {
-      const totalHeight = document.documentElement.scrollHeight - window.innerHeight
-      if (totalHeight > 0) {
-        setScrollProgress((window.scrollY / totalHeight) * 100)
+    let ticking = false
+
+    const update = () => {
+      ticking = false
+      const total = document.documentElement.scrollHeight - window.innerHeight
+      const y = window.scrollY
+      const p = total > 0 ? y / total : 0
+
+      if (progressRef.current) progressRef.current.style.transform = `scaleX(${p})`
+      setScrolled(y > 24)
+
+      const tl = timelineRef.current
+      if (tl) {
+        const r = tl.getBoundingClientRect()
+        const v = Math.min(1, Math.max(0, (window.innerHeight * 0.7 - r.top) / r.height))
+        tl.style.setProperty("--progress", v.toFixed(3))
       }
 
-      // Check if user is scrolled to the absolute bottom (to robustly highlight contact section)
-      const isAtBottom = window.scrollY >= totalHeight - 15
-      if (isAtBottom) {
+      if (y >= total - 15) {
         setActiveSection("contact")
         return
       }
 
-      // Scroll spy logic
-      const sections = ["home", "projects", "education", "skills", "contact"]
-      const scrollPosition = window.scrollY + 250 // trigger offset
-
-      for (const section of sections) {
-        const el = document.getElementById(section)
-        if (el) {
-          const top = el.offsetTop
-          const height = el.offsetHeight
-          if (scrollPosition >= top && scrollPosition < top + height) {
-            setActiveSection(section)
-            break
-          }
+      const pos = y + window.innerHeight * 0.35
+      for (const id of NAV_SECTIONS) {
+        const el = document.getElementById(id)
+        if (el && pos >= el.offsetTop && pos < el.offsetTop + el.offsetHeight) {
+          setActiveSection(id)
+          break
         }
       }
     }
 
-    window.addEventListener("scroll", handleScroll)
-    handleScroll() // initial call
-    return () => window.removeEventListener("scroll", handleScroll)
+    const onScroll = () => {
+      if (!ticking) {
+        ticking = true
+        requestAnimationFrame(update)
+      }
+    }
+
+    window.addEventListener("scroll", onScroll, { passive: true })
+    window.addEventListener("resize", onScroll)
+    update()
+    return () => {
+      window.removeEventListener("scroll", onScroll)
+      window.removeEventListener("resize", onScroll)
+    }
   }, [])
 
-  const scrollToSection = (sectionId) => {
-    const element = document.getElementById(sectionId)
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" })
+  // Sliding pill under the active nav link
+  useEffect(() => {
+    const update = () => {
+      const el = navRefs.current[activeSection]
+      if (el) setIndicator({ left: el.offsetLeft, width: el.offsetWidth, ready: true })
     }
+    update()
+    document.fonts?.ready?.then(update)
+    window.addEventListener("resize", update)
+    return () => window.removeEventListener("resize", update)
+  }, [activeSection])
+
+  // Modal: close on Escape, lock background scroll
+  useEffect(() => {
+    if (!selectedImage) return
+    const onKey = (e) => e.key === "Escape" && setSelectedImage(null)
+    const prev = document.body.style.overflow
+    document.body.style.overflow = "hidden"
+    window.addEventListener("keydown", onKey)
+    return () => {
+      document.body.style.overflow = prev
+      window.removeEventListener("keydown", onKey)
+    }
+  }, [selectedImage])
+
+  const scrollToSection = (id) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" })
   }
 
-  // Pre-generate particle coordinates so they do not random-jitter on mouse movement re-renders
-  const particles = useMemo(() => {
-    return [...Array(22)].map((_, i) => ({
-      id: i,
-      left: `${(i * 7 + 11) % 100}%`,
-      top: `${(i * 13 + 7) % 100}%`,
-      size: ((i * 3) % 6) + 4, // 4px to 10px
-      delay: `${(i * 0.4).toFixed(1)}s`,
-      speedFactor: 0.006 + (i % 3) * 0.005, // variable parallax shift speeds
-      color: i % 4 === 0 ? '#38bdf8' : i % 4 === 1 ? '#818cf8' : i % 4 === 2 ? '#60a5fa' : '#a78bfa'
-    }))
-  }, [])
-
-  const projects = [
-    {
-      title: "Mammogram Report Interpretation Web App (Flask & NLP)",
-      description: "A Flask/React web app secured with Firebase that uses a sequence-to-sequence NLP model to translate technical mammogram reports into plain, patient-friendly language in real time. Uploads are automatically deleted after processing to protect privacy, empowering non-medical users to understand their results instantly.",
-      tech: ["React.js", "python", "javascript", "Firebase", "Machine Learning", "Figma", "Natural Language Processing (NLP)"],
-      image: "/upload.png",
-    },
-    {
-      title: "Solar Website",
-      description: "Developed a web application using React for a solar business with a user-friendly interface, featuring customer feedback, managed projects and more.",
-      tech: ["React.js", "typescript", "javascript", "GIT", "Figma"],
-      image: "/solar.png",
-    },
-    {
-      title: "A Movie app using Flutter",
-      description: "Designed and built a responsive movie app using Flutter, integrating The Movie DB API and Firebase for backend data storage. Included features like personalized watchlists, local persistence, and intuitive UI design based on HCI principles. Implemented robust error handling and maintained version control throughout development, with a critical evaluation of design decisions.",
-      tech: ["Flutter", "Dart", "Firebase", "Figma", "Android Studio"],
-      image: "/flutter.png",
-    },
-    {
-      title: "Unity AR Communication Application",
-      description: "Developed an augmented reality mobile application to support communication for blind and deaf individuals. Built using Unity with C#, the app focused on accessibility and inclusion. Worked collaboratively in an Agile team, contributing to both design and development, and delivered a functional prototype tailored for diverse user needs.",
-      tech: ["Unity", "C#", "Figma", "Firebase", "Agile"],
-      image: "/unity.png",
-    },
-    {
-      title: "Advanced Software Modelling and Simulation Project (Java)",
-      description: "Developed a console-based, multithreaded Java simulation to model rush-hour traffic flow through a configurable road network with traffic-light–controlled intersections, custom thread-safe buffers, and real-time reporting.",
-      tech: ["Java", "Concurrency", "Threads", "Simulation Design"],
-      image: "/java.png",
-    },
-    {
-      title: "Tasty BYTES Mobile App – UX Design Project",
-      description: "Designed a mobile food-ordering app prototype for UCLan students and staff, focused on improving lunchtime efficiency. Created detailed user personas, low-fidelity wireframes, and a high-fidelity interactive prototype using Figma. The design addressed core UX requirements such as vendor listings, filtered menus, order tracking, and sustainable packaging representation.",
-      tech: ["Figma", "UI/UX principles"],
-      image: "/ui.png",
-    },
-  ]
-
-  const technicalSkills = [
-    "JavaScript",
-    "typescript",
-    "C++",
-    "Python",
-    "React",
-    "Next.js",
-    "C#",
-    "Java",
-    "Dart",
-    "HTML",
-    "CSS",
-    "REST APIs",
-  ]
-  
-  const databases = [
-    "MongoDB",
-    "PostgreSQL",
-    "Firebase",
-    "MySQL",
-  ]
-
-  const toolsPlatforms = [
-    "Git",
-    "GitHub",
-    "Docker",
-    "Unity",
-    "Flutter",
-    "Jupyter Notebook",
-    "Canva",
-    "Figma",
-    "VS Code",
-    "Android Studio",
-  ]
-
-  const softSkills = [
-    "Problem Solving",
-    "Team Leadership",
-    "Communication",
-    "Project Management",
-    "Creative Thinking",
-    "Adaptability",
-    "Time Management",
-    "Collaboration",
-    "Organizational Skills",
-  ]
-
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0e192d] via-[#0e192d] to-[#091422] text-slate-200 overflow-x-hidden font-sans relative">
-      
-      {/* Scroll Progress Bar */}
-      <div
-        className="fixed top-0 left-0 h-1 bg-gradient-to-r from-sky-400 via-blue-400 to-indigo-500 z-50 transition-all duration-75 scroll-progress-glow"
-        style={{ width: `${scrollProgress}%` }}
-      />
+    <div className="min-h-screen bg-[var(--ink)] text-slate-200 overflow-x-hidden font-sans relative">
+      {/* Ambient layers */}
+      <div className="aurora" aria-hidden="true">
+        <span className="a1" />
+        <span className="a2" />
+        <span className="a3" />
+      </div>
+      <div className="spotlight" aria-hidden="true" />
+      <div className="grain" aria-hidden="true" />
 
-      {/* Glassmorphic Sticky Header / Navbar */}
-      <header className="fixed top-4 left-1/2 transform -translate-x-1/2 z-40 w-[90%] max-w-3xl rounded-full border border-[#1a5e95]/30 bg-[#124c7a]/60 backdrop-blur-md px-4 py-2.5 flex justify-between items-center shadow-lg shadow-black/10 transition-all duration-300">
-        <div 
-          className="text-white font-bold tracking-tight text-lg cursor-pointer pl-2 hover:text-sky-300 transition-colors"
+      {/* Scroll progress */}
+      <div ref={progressRef} className="progress" aria-hidden="true" />
+
+      {/* Navigation */}
+      <header className={`nav ${scrolled ? "is-scrolled" : ""}`}>
+        <button
           onClick={() => scrollToSection("home")}
+          className="hidden sm:grid place-items-center w-9 h-9 rounded-full font-serif italic text-lg text-white bg-white/5 border border-white/10 hover:border-sky-300/50 transition-colors"
+          aria-label="Back to top"
         >
-         
-        </div>
-        <nav className="flex space-x-1 sm:space-x-2">
-          {["home", "projects", "education", "skills", "contact"].map((sec) => (
+          M
+        </button>
+        <nav className="relative flex items-center">
+          <span
+            className="nav-indicator"
+            style={{
+              left: indicator.left,
+              width: indicator.width,
+              opacity: indicator.ready ? 1 : 0,
+            }}
+            aria-hidden="true"
+          />
+          {NAV_SECTIONS.map((sec) => (
             <button
               key={sec}
+              ref={(el) => (navRefs.current[sec] = el)}
               onClick={() => scrollToSection(sec)}
-              className={`px-3 py-1.5 rounded-full text-xs sm:text-sm font-medium transition-all duration-300 capitalize ${
-                activeSection === sec
-                  ? "bg-[#1a5e95] text-white shadow-md shadow-sky-500/10"
-                  : "text-slate-300 hover:text-white hover:bg-white/5"
-              }`}
+              className={`nav-link ${activeSection === sec ? "is-active" : ""}`}
+              aria-current={activeSection === sec ? "true" : undefined}
             >
               {sec}
             </button>
@@ -331,598 +403,424 @@ export default function Portfolio() {
         </nav>
       </header>
 
-      {/* Background Dot Grid Overlay with Parallax Motion */}
-      <div 
-        className="fixed inset-0 pointer-events-none bg-grid-dots z-0 opacity-70"
-        style={{
-          transform: `translate(${mousePosition.x * 0.008}px, ${mousePosition.y * 0.008}px)`,
-        }}
-      />
+      {/* ============================ HERO ============================ */}
+      <section id="home" className="relative min-h-[100svh] flex items-center justify-center px-6 pt-28 pb-28 z-10">
+        <div className="hero-grid" aria-hidden="true" />
 
-      {/* Ambient Mouse Glow Tracker */}
-      <div
-        className="fixed inset-0 pointer-events-none opacity-40 z-0"
-        style={{
-          background: `radial-gradient(700px circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(56, 189, 248, 0.15), transparent 50%)`,
-        }}
-      />
-
-      {/* Ambient Floating Particle Parallax background */}
-      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        {particles.map((p) => (
-          <div
-            key={p.id}
-            className="absolute rounded-full animate-pulse opacity-25"
-            style={{
-              left: p.left,
-              top: p.top,
-              width: `${p.size}px`,
-              height: `${p.size}px`,
-              animationDelay: p.delay,
-              transform: `translate(${mousePosition.x * p.speedFactor}px, ${mousePosition.y * p.speedFactor}px)`,
-              backgroundColor: p.color,
-            }}
-          />
-        ))}
-      </div>
-
-      {/* Ambient Large Floating Blurs */}
-      <div className="absolute top-[20%] left-[-10%] w-[350px] h-[350px] rounded-full bg-blue-500/10 blur-[120px] pointer-events-none animate-float-slow" />
-      <div className="absolute top-[60%] right-[-10%] w-[400px] h-[400px] rounded-full bg-indigo-500/10 blur-[130px] pointer-events-none animate-float-medium" />
-
-      {/* Hero Section */}
-      <section id="home" className="relative min-h-screen flex items-center justify-center px-6 pt-20 z-10">
-        <div className="text-center space-y-6 max-w-3xl">
-          
-          {/* Profile Photo with Interactive Border Effect */}
-          <ScrollReveal direction="scale" duration={1000}>
-            <div className="w-48 h-48 sm:w-52 sm:h-52 mx-auto rounded-full bg-gradient-to-br from-sky-400 via-[#1a5e95] to-indigo-500 p-1 mb-4 overflow-hidden shadow-xl shadow-sky-500/10 hover:scale-105 transition-transform duration-500 group relative">
-              <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
-              <img
-                src="/pic.png"
-                alt="Profile Photo"
-                className="w-full h-full rounded-full object-cover bg-slate-800"
-              />
+        <div className="relative text-center max-w-3xl mx-auto flex flex-col items-center">
+          {/* Portrait */}
+          <div className="hero-in" style={{ "--d": "0ms" }}>
+            <div className="photo-float">
+              <div className="photo-ring w-40 h-40 sm:w-48 sm:h-48">
+                <img src="/pic.png" alt="Mehara Udawatte" className="w-full h-full object-cover bg-slate-800" />
+              </div>
             </div>
-          </ScrollReveal>
+          </div>
 
-          {/* Heading - Mehara Udawatte */}
-          <ScrollReveal direction="up" delay={200} duration={800}>
-            <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight text-white mb-2">
-              Mehara Udawatte
-            </h1>
-          </ScrollReveal>
+          {/* Status pill */}
+          <div className="hero-in mt-8" style={{ "--d": "200ms" }}>
+            <span className="pill">
+              <span className="dot-live" />
+              Software Engineer · Colombo, Sri Lanka
+            </span>
+          </div>
 
-          {/* Subheading - Interactive Typing Animation */}
-          <ScrollReveal direction="up" delay={400} duration={800}>
-            <div className="text-lg sm:text-xl md:text-2xl font-medium tracking-wide text-sky-300 min-h-[36px] flex justify-center items-center">
-              <span>I&apos;m a </span>
-              <span className="ml-2 border-r-2 border-sky-400 pr-1 animate-pulse font-semibold">
-                {typedText}
+          {/* Name */}
+          <h1 className="mt-6 text-[3.25rem] leading-[0.95] sm:text-7xl md:text-8xl tracking-tight text-white">
+            <span className="block font-semibold">
+              <SplitLetters text="Mehara" baseDelay={300} />
+            </span>
+            <span className="hero-in block font-serif italic font-normal" style={{ "--d": "700ms" }}>
+              <span className="text-gradient pr-2">Udawatte</span>
+            </span>
+          </h1>
+
+          {/* Rotating role */}
+          <div className="hero-in mt-6 text-lg sm:text-xl md:text-2xl text-slate-300 font-light" style={{ "--d": "900ms" }}>
+            <span>I&apos;m a </span>
+            <span className="role-window">
+              <span key={roleIndex} className="role-word font-medium text-sky-200">
+                {ROLES[roleIndex]}
               </span>
-            </div>
-          </ScrollReveal>
+            </span>
+          </div>
 
-          {/* Hero Paragraph description */}
-          <ScrollReveal direction="up" delay={550} duration={800}>
-            <p className="text-sm sm:text-base text-slate-300 max-w-xl mx-auto leading-relaxed">
-              Software Engineer who enjoys designing and building software solutions that are efficient, useful, 
-              and reliable. Loves solving problems through coding and turning ideas into practical applications. 
-              Always interested in learning new technologies, improving skills, and exploring better ways to create quality software.
+          {/* Intro */}
+          <p
+            className="hero-in mt-6 text-sm sm:text-base text-slate-400 max-w-xl mx-auto leading-relaxed"
+            style={{ "--d": "1050ms" }}
+          >
+            Software Engineer who enjoys designing and building software solutions that are efficient, useful, and
+            reliable. Loves solving problems through coding and turning ideas into practical applications. Always
+            interested in learning new technologies, improving skills, and exploring better ways to create quality
+            software.
+          </p>
 
-            </p>
-          </ScrollReveal>
+          {/* CTAs */}
+          <div
+            className="hero-in mt-10 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center"
+            style={{ "--d": "1200ms" }}
+          >
+            <MagneticButton onClick={() => scrollToSection("projects")} className="btn btn-primary">
+              View My Work
+              <ArrowRight className="arrow w-4 h-4" />
+            </MagneticButton>
+            <MagneticButton onClick={() => scrollToSection("contact")} className="btn btn-ghost">
+              Get In Touch
+            </MagneticButton>
+          </div>
 
-          {/* Navigation Buttons with Magnetic Pull Effects */}
-          <ScrollReveal direction="up" delay={700} duration={800}>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
-              <MagneticButton
-                onClick={() => scrollToSection("projects")}
-                size="lg"
-                className="bg-gradient-to-r from-sky-500 to-[#1a5e95] hover:from-sky-600 hover:to-blue-700 text-white px-8 py-3 text-base font-medium shadow-lg shadow-sky-500/10 cursor-pointer"
-              >
-                <Eye className="w-5 h-5 mr-2 animate-bounce" />
-                View My Work
-              </MagneticButton>
-
-              <MagneticButton
-                onClick={() => scrollToSection("contact")}
-                size="lg"
-                variant="outline"
-                className="border-2 border-sky-400/40 text-sky-300 hover:bg-sky-400/10 px-8 py-3 text-base font-medium bg-transparent cursor-pointer"
-              >
-                <MessageCircle className="w-5 h-5 mr-2" />
-                Get In Touch
-              </MagneticButton>
-            </div>
-          </ScrollReveal>
-        </div>
-
-        {/* Scroll Down Indicator Icon - Advanced Double Chevron */}
-        <div 
-          className="absolute bottom-8 left-1/2 transform -translate-x-1/2 cursor-pointer flex flex-col items-center gap-1 group"
-          onClick={() => scrollToSection("projects")}
-        >
-          <span className="text-[10px] uppercase tracking-widest text-slate-400 group-hover:text-sky-300 transition-colors">Scroll Down</span>
-          <div className="flex flex-col items-center">
-            <ChevronDown className="w-5 h-5 text-sky-400 animate-bounce" />
-            <ChevronDown className="w-4 h-4 text-sky-400/60 -mt-3 animate-pulse" />
+          {/* Socials */}
+          <div className="hero-in mt-10 flex gap-3" style={{ "--d": "1350ms" }}>
+            {SOCIALS.map(({ label, href, icon: Icon }) => (
+              <a key={label} href={href} target="_blank" rel="noopener noreferrer" aria-label={label} className="social">
+                <Icon className="w-4 h-4" />
+              </a>
+            ))}
           </div>
         </div>
+
+        {/* Scroll cue */}
+        <button
+          onClick={() => scrollToSection("projects")}
+          className="hero-in hero-centered absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 text-slate-500 hover:text-sky-200 transition-colors"
+          style={{ "--d": "1600ms" }}
+          aria-label="Scroll to projects"
+        >
+          <span className="scroll-cue">
+            <span />
+          </span>
+          <span className="text-[10px] uppercase tracking-[0.3em] font-mono">Scroll</span>
+        </button>
       </section>
 
-      {/* Projects Section */}
-      <section id="projects" className="py-24 px-6 relative z-10 bg-slate-950/20">
+      {/* ========================== PROJECTS ========================== */}
+      <section id="projects" className="py-28 md:py-36 px-6 relative z-10">
         <div className="max-w-6xl mx-auto">
-          
-          <ScrollReveal direction="up">
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 text-white">
-              Featured Projects
-            </h2>
-            <div className="w-16 h-1 bg-sky-400 mx-auto mb-14 rounded-full" />
-          </ScrollReveal>
+          <SectionHeading
+            index="01"
+            eyebrow="Selected Work"
+            title="Featured"
+            accent="Projects"
+            description="A selection of things I've designed and built — from NLP-powered web apps to AR accessibility tools."
+          />
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {projects.map((project, index) => (
-              <ScrollReveal 
-                key={index} 
-                direction="up" 
-                delay={index * 100}
-                className="h-full"
-              >
-                <TiltCard className="h-full rounded-2xl">
-                  <Card className="bg-slate-950/40 backdrop-blur-md border border-[#1a5e95]/30 hover:border-sky-400/50 hover:shadow-xl hover:shadow-sky-500/5 transition-all duration-300 group hover-edge-glow flex flex-col h-full overflow-hidden">
-                    <CardContent className="p-5 flex flex-col h-full">
-                      
-                      {/* Image Preview Container */}
-                      <div
-                        className="aspect-video rounded-lg mb-4 overflow-hidden cursor-pointer bg-slate-900/50 relative"
-                        onClick={() => setSelectedImage(project.image)}
-                      >
-                        <div className="absolute inset-0 bg-sky-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 flex items-center justify-center">
-                          <Eye className="w-8 h-8 text-white drop-shadow-md" />
-                        </div>
-                    <img
-                      src={project.image}
-                      alt={project.title}
-                      className="w-full h-full object-cover transition-transform duration-300"
-                    />
-                      </div>
+            {PROJECTS.map((project, index) => (
+              <ScrollReveal key={project.title} direction="up" delay={(index % 3) * 120} className="h-full">
+                <SpotlightCard className="group h-full flex flex-col p-3">
+                  <button
+                    type="button"
+                    className="project-media"
+                    onClick={() => setSelectedImage(project)}
+                    aria-label={`Preview ${project.title}`}
+                  >
+                    <img src={project.image} alt={project.title} loading="lazy" />
+                    <span className="project-index">{String(index + 1).padStart(2, "0")}</span>
+                    <span className="media-cta">
+                      <Maximize2 className="w-3.5 h-3.5" />
+                      Preview
+                    </span>
+                  </button>
 
-                      <h3 className="text-base sm:text-lg font-semibold mb-2 text-white leading-tight group-hover:text-sky-300 transition-colors">
-                        {project.title}
-                      </h3>
-                      
-                      <p className="text-slate-300 mb-4 text-xs sm:text-sm leading-relaxed flex-grow">
-                        {project.description}
-                      </p>
-
-                      <div className="flex flex-wrap gap-1.5 pt-2 mt-auto">
-                        {project.tech.map((tech, techIndex) => (
-                          <Badge
-                            key={techIndex}
-                            variant="secondary"
-                            className="bg-sky-400/10 text-sky-300 hover:bg-sky-400/20 border-0 text-[10px] sm:text-xs font-normal"
-                          >
-                            {tech}
-                          </Badge>
-                        ))}
-                      </div>
-
-                    </CardContent>
-                  </Card>
-                </TiltCard>
+                  <div className="flex flex-col flex-grow px-3 pt-5 pb-3">
+                    <h3 className="text-base sm:text-lg font-semibold text-white leading-snug transition-colors duration-300 group-hover:text-sky-200">
+                      {project.title}
+                    </h3>
+                    <p className="mt-3 text-slate-400 text-[13px] sm:text-sm leading-relaxed flex-grow">
+                      {project.description}
+                    </p>
+                    <div className="flex flex-wrap gap-1.5 pt-5 mt-auto">
+                      {project.tech.map((tech) => (
+                        <span key={tech} className="chip chip-sm">
+                          {tech}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </SpotlightCard>
               </ScrollReveal>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Education Section */}
-      <section id="education" className="py-24 px-6 relative z-10">
+      {/* ========================== EDUCATION ========================= */}
+      <section id="education" className="py-28 md:py-36 px-6 relative z-10">
         <div className="max-w-4xl mx-auto">
-          
-          <ScrollReveal direction="up">
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 text-white">
-              Education
-            </h2>
-            <div className="w-16 h-1 bg-sky-400 mx-auto mb-14 rounded-full" />
-          </ScrollReveal>
+          <SectionHeading index="02" eyebrow="Background" title="My" accent="Education" />
 
-          <div className="space-y-6 relative border-l-2 border-[#1a5e95]/40 pl-6 ml-4 sm:ml-6">
-            
-            {/* Education Card 1 */}
-            <ScrollReveal direction="left" delay={100}>
-              <div className="absolute -left-[31px] top-6 w-4 h-4 rounded-full bg-sky-400 border-4 border-[#124c7a] shadow-md shadow-sky-500/50" />
-              <TiltCard>
-                <Card className="bg-slate-950/40 backdrop-blur-md border border-[#1a5e95]/30 hover:border-sky-400/40 hover:shadow-lg hover:shadow-sky-500/5 transition-all duration-300 hover-edge-glow">
-                  <CardContent className="p-6">
-                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                      <div>
-                        <h3 className="text-lg font-semibold text-white">Bachelor of Science in Software Engineering</h3>
-                        <p className="text-sky-300 font-medium text-sm mt-0.5">University Of Lancashire</p>
-                        <p className="text-slate-300 text-xs sm:text-sm mt-2 font-normal leading-relaxed">
-                          Relevant coursework: Data Structures, Algorithms, Software Engineering (Software Development Life Cycle, Agile Methodologies, System Design)
-                        </p>
-                      </div>
-                      <div className="text-left md:text-right shrink-0">
-                        <Badge variant="outline" className="border-sky-400/40 text-sky-300 bg-sky-500/5">2023 - 2025</Badge>
-                      </div>
+          <div ref={timelineRef} className="timeline">
+            <span className="timeline-fill" aria-hidden="true" />
+            {EDUCATION.map((item, i) => (
+              <ScrollReveal
+                key={item.title}
+                direction="left"
+                delay={i * 120}
+                className="relative mb-6 last:mb-0"
+                style={{ "--accent": item.accent }}
+              >
+                <span className="timeline-dot" aria-hidden="true" />
+                <SpotlightCard tilt={false} className="p-6 sm:p-7">
+                  <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                    <div>
+                      <h3 className="text-lg sm:text-xl font-semibold text-white leading-snug">{item.title}</h3>
+                      <p className="mt-1.5 text-sm font-medium" style={{ color: item.accent }}>
+                        {item.school}
+                      </p>
+                      {item.detail && (
+                        <p className="mt-3 text-slate-400 text-sm leading-relaxed max-w-xl">{item.detail}</p>
+                      )}
                     </div>
-                  </CardContent>
-                </Card>
-              </TiltCard>
-            </ScrollReveal>
-
-            {/* Education Card 2 */}
-            <ScrollReveal direction="left" delay={200}>
-              <div className="absolute -left-[31px] top-6 w-4 h-4 rounded-full bg-sky-400 border-4 border-[#124c7a] shadow-md shadow-sky-500/50" />
-              <TiltCard>
-                <Card className="bg-slate-950/40 backdrop-blur-md border border-[#1a5e95]/30 hover:border-sky-400/40 hover:shadow-lg hover:shadow-sky-500/5 transition-all duration-300 hover-edge-glow">
-                  <CardContent className="p-6">
-                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                      <div>
-                        <h3 className="text-lg font-semibold text-white">Professional Qualification of Java Application Development using JavaSE</h3>
-                        <p className="text-sky-300 font-medium text-sm mt-0.5">University of Colombo School of Computing</p>
-                      </div>
-                      <div className="text-left md:text-right shrink-0">
-                        <Badge variant="outline" className="border-sky-400/40 text-sky-300 bg-sky-500/5">2024</Badge>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TiltCard>
-            </ScrollReveal>
-
-            {/* Education Card 3 */}
-            <ScrollReveal direction="left" delay={300}>
-              <div className="absolute -left-[31px] top-6 w-4 h-4 rounded-full bg-indigo-400 border-4 border-[#124c7a] shadow-md shadow-indigo-500/50" />
-              <TiltCard>
-                <Card className="bg-slate-950/40 backdrop-blur-md border border-[#1a5e95]/30 hover:border-indigo-400/40 hover:shadow-lg hover:shadow-indigo-500/5 transition-all duration-300 hover-edge-glow">
-                  <CardContent className="p-6">
-                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                      <div>
-                        <h3 className="text-lg font-semibold text-white">GCE A/L</h3>
-                        <p className="text-indigo-300 font-medium text-sm mt-0.5">Sirimavo Bandaranaike Vidyalaya</p>
-                      </div>
-                      <div className="text-left md:text-right shrink-0">
-                        <Badge variant="outline" className="border-indigo-400/40 text-indigo-300 bg-indigo-500/5">2022 (2023)</Badge>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TiltCard>
-            </ScrollReveal>
-
-            {/* Education Card 4 */}
-            <ScrollReveal direction="left" delay={400}>
-              <div className="absolute -left-[31px] top-6 w-4 h-4 rounded-full bg-indigo-400 border-4 border-[#124c7a] shadow-md shadow-indigo-500/50" />
-              <TiltCard>
-                <Card className="bg-slate-950/40 backdrop-blur-md border border-[#1a5e95]/30 hover:border-indigo-400/40 hover:shadow-lg hover:shadow-indigo-500/5 transition-all duration-300 hover-edge-glow">
-                  <CardContent className="p-6">
-                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                      <div>
-                        <h3 className="text-lg font-semibold text-white">GCE O/L</h3>
-                        <p className="text-indigo-300 font-medium text-sm mt-0.5">Sirimavo Bandaranaike Vidyalaya</p>
-                      </div>
-                      <div className="text-left md:text-right shrink-0">
-                        <Badge variant="outline" className="border-indigo-400/40 text-indigo-300 bg-indigo-500/5">2019</Badge>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TiltCard>
-            </ScrollReveal>
+                    <span className="period shrink-0 self-start">{item.period}</span>
+                  </div>
+                </SpotlightCard>
+              </ScrollReveal>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Skills Section */}
-      <section id="skills" className="py-24 px-6 relative z-10 bg-slate-950/20">
-        <div className="max-w-5xl mx-auto">
-          
-          <ScrollReveal direction="up">
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 text-white">
-              Skills & Expertise
-            </h2>
-            <div className="w-16 h-1 bg-sky-400 mx-auto mb-14 rounded-full" />
-          </ScrollReveal>
+      {/* ============================ SKILLS ========================== */}
+      <section id="skills" className="py-28 md:py-36 relative z-10">
+        <div className="px-6">
+          <SectionHeading index="03" eyebrow="Toolkit" title="Skills &" accent="Expertise" />
+        </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            
-            {/* Technical Skills Card */}
-            <ScrollReveal direction="up" delay={100} className="h-full">
-              <Card className="bg-slate-950/40 backdrop-blur-md border border-[#1a5e95]/30 hover:border-sky-400/40 hover:shadow-lg hover:shadow-sky-500/5 transition-all duration-300 hover-edge-glow h-full">
-                <CardContent className="p-5 flex flex-col h-full">
-                  <div className="flex items-center mb-4">
-                    <div className="w-9 h-9 rounded-full bg-sky-500/10 flex items-center justify-center mr-3">
-                      <Code className="w-4 h-4 text-sky-400" />
-                    </div>
-                    <h3 className="text-base sm:text-lg font-semibold text-white">Technical Skills</h3>
-                  </div>
-                  <div className="flex flex-wrap gap-2 mt-auto">
-                    {technicalSkills.map((skill, index) => (
-                      <Badge
-                        key={index}
-                        variant="outline"
-                        className="border-sky-400/30 text-sky-300 hover:bg-sky-400/10 transition-colors text-xs font-normal"
-                      >
-                        {skill}
-                      </Badge>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </ScrollReveal>
-
-            {/* Tools & Platforms Card */}
-            <ScrollReveal direction="up" delay={200} className="h-full">
-              <Card className="bg-slate-950/40 backdrop-blur-md border border-[#1a5e95]/30 hover:border-indigo-400/40 hover:shadow-lg hover:shadow-indigo-500/5 transition-all duration-300 hover-edge-glow h-full">
-                <CardContent className="p-5 flex flex-col h-full">
-                  <div className="flex items-center mb-4">
-                    <div className="w-9 h-9 rounded-full bg-indigo-500/10 flex items-center justify-center mr-3">
-                      <Database className="w-4 h-4 text-indigo-400" />
-                    </div>
-                    <h3 className="text-base sm:text-lg font-semibold text-white">Tools & Platforms</h3>
-                  </div>
-                  <div className="flex flex-wrap gap-2 mt-auto">
-                    {toolsPlatforms.map((tool, index) => (
-                      <Badge
-                        key={index}
-                        variant="outline"
-                        className="border-indigo-400/30 text-indigo-300 hover:bg-indigo-500/20 transition-colors text-xs font-normal"
-                      >
-                        {tool}
-                      </Badge>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </ScrollReveal>
-
-            {/* Databases Card */}
-            <ScrollReveal direction="up" delay={300} className="h-full">
-              <Card className="bg-slate-950/40 backdrop-blur-md border border-[#1a5e95]/30 hover:border-cyan-400/40 hover:shadow-lg hover:shadow-cyan-500/5 transition-all duration-300 hover-edge-glow h-full">
-                <CardContent className="p-5 flex flex-col h-full">
-                  <div className="flex items-center mb-4">
-                    <div className="w-9 h-9 rounded-full bg-cyan-500/10 flex items-center justify-center mr-3">
-                      <Database className="w-4 h-4 text-cyan-400" />
-                    </div>
-                    <h3 className="text-base sm:text-lg font-semibold text-white">Databases</h3>
-                  </div>
-                  <div className="flex flex-wrap gap-2 mt-auto">
-                    {databases.map((db, index) => (
-                      <Badge
-                        key={index}
-                        variant="outline"
-                        className="border-cyan-400/30 text-cyan-300 hover:bg-cyan-400/10 transition-colors text-xs font-normal"
-                      >
-                        {db}
-                      </Badge>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </ScrollReveal>
-
-            {/* Soft Skills Card */}
-            <ScrollReveal direction="up" delay={400} className="h-full">
-              <Card className="bg-slate-950/40 backdrop-blur-md border border-[#1a5e95]/30 hover:border-violet-400/40 hover:shadow-lg hover:shadow-violet-500/5 transition-all duration-300 hover-edge-glow h-full">
-                <CardContent className="p-5 flex flex-col h-full">
-                  <div className="flex items-center mb-4">
-                    <div className="w-9 h-9 rounded-full bg-violet-500/10 flex items-center justify-center mr-3">
-                      <Users className="w-4 h-4 text-violet-400" />
-                    </div>
-                    <h3 className="text-base sm:text-lg font-semibold text-white">Soft Skills</h3>
-                  </div>
-                  <div className="flex flex-wrap gap-2 mt-auto">
-                    {softSkills.map((skill, index) => (
-                      <Badge
-                        key={index}
-                        variant="outline"
-                        className="border-violet-400/30 text-violet-300 hover:bg-violet-500/20 transition-colors text-xs font-normal"
-                      >
-                        {skill}
-                      </Badge>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </ScrollReveal>
-
+        {/* Infinite marquees */}
+        <ScrollReveal direction="none" className="space-y-4 mb-16">
+          <div className="marquee" style={{ "--speed": "45s" }}>
+            <div className="marquee-track">
+              {[...TECHNICAL_SKILLS, ...DATABASES, ...TECHNICAL_SKILLS, ...DATABASES].map((s, i) => (
+                <span key={i} className="marquee-item">
+                  {s}
+                </span>
+              ))}
+            </div>
           </div>
+          <div className="marquee reverse" style={{ "--speed": "50s" }}>
+            <div className="marquee-track">
+              {[...TOOLS, ...TOOLS].map((s, i) => (
+                <span key={i} className="marquee-item alt">
+                  {s}
+                </span>
+              ))}
+            </div>
+          </div>
+        </ScrollReveal>
+
+        <div className="max-w-6xl mx-auto px-6 grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {SKILL_GROUPS.map(({ title, icon: Icon, items, accent }, gi) => (
+            <ScrollReveal key={title} direction="up" delay={gi * 110} className="h-full" style={{ "--accent": accent }}>
+              <SpotlightCard className="h-full p-6 flex flex-col">
+                <div className="flex items-center justify-between mb-6">
+                  <span className="icon-tile">
+                    <Icon className="w-[18px] h-[18px]" />
+                  </span>
+                  <span className="font-mono text-xs text-slate-500">{String(items.length).padStart(2, "0")}</span>
+                </div>
+                <h3 className="text-lg font-semibold text-white mb-4">{title}</h3>
+                <div className="chip-stagger flex flex-wrap gap-2">
+                  {items.map((skill, i) => (
+                    <span key={skill} className="chip" style={{ "--i": i }}>
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              </SpotlightCard>
+            </ScrollReveal>
+          ))}
         </div>
       </section>
 
-      {/* Collaboration Banner / Let's Work Together with Magnetic Button */}
-      <section className="py-24 px-6 relative z-10">
-        <ScrollReveal direction="scale">
-          <div className="max-w-4xl mx-auto text-center bg-gradient-to-r from-sky-500/15 via-[#1a5e95]/20 to-indigo-500/15 border border-[#1a5e95]/40 rounded-3xl p-10 backdrop-blur-md shadow-xl">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">
-              Let&apos;s Work Together
-            </h2>
-            <p className="text-sm sm:text-base text-slate-300 mb-8 max-w-xl mx-auto leading-relaxed">
-              Ready to bring your ideas to life? Let&apos;s collaborate and create something amazing together.
-            </p>
-            <MagneticButton
-              onClick={() => scrollToSection("contact")}
-              size="lg"
-              className="bg-gradient-to-r from-sky-500 to-[#1a5e95] hover:from-sky-600 hover:to-blue-700 text-white px-8 py-3 text-base font-medium shadow-md shadow-sky-500/10 cursor-pointer"
-            >
-              <Send className="w-5 h-5 mr-2 animate-pulse" />
-              Send Message
-            </MagneticButton>
+      {/* ============================= CTA ============================ */}
+      <section className="py-20 px-6 relative z-10">
+        <ScrollReveal direction="scale" className="max-w-4xl mx-auto">
+          <div className="glow-border">
+            <div className="glow-inner text-center px-6 py-14 sm:px-12 sm:py-20">
+              <span className="eyebrow">Collaborate</span>
+              <h2 className="mt-5 font-serif text-4xl sm:text-5xl md:text-6xl leading-[1.05] text-white">
+                Let&apos;s work <em className="text-gradient">together</em>
+              </h2>
+              <p className="mt-5 text-sm sm:text-base text-slate-400 max-w-xl mx-auto leading-relaxed">
+                Ready to bring your ideas to life? Let&apos;s collaborate and create something amazing together.
+              </p>
+              <div className="mt-10 flex justify-center">
+                <MagneticButton onClick={() => scrollToSection("contact")} className="btn btn-primary">
+                  <Send className="w-4 h-4" />
+                  Send Message
+                </MagneticButton>
+              </div>
+            </div>
           </div>
         </ScrollReveal>
       </section>
 
-      {/* Contact Section */}
-      <section id="contact" className="py-24 px-6 relative z-10">
-        <div className="max-w-4xl mx-auto">
-          
-          <ScrollReveal direction="up">
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 text-white">
-              Get In Touch
-            </h2>
-            <div className="w-16 h-1 bg-sky-400 mx-auto mb-14 rounded-full" />
-          </ScrollReveal>
+      {/* =========================== CONTACT ========================== */}
+      <section id="contact" className="py-28 md:py-36 px-6 relative z-10">
+        <div className="max-w-5xl mx-auto">
+          <SectionHeading index="04" eyebrow="Contact" title="Get in" accent="touch" />
 
-          <div className="grid md:grid-cols-2 gap-10">
-            
-            {/* Contact Information */}
-            <ScrollReveal direction="right" className="space-y-6">
-              <h3 className="text-xl font-semibold text-white">Let&apos;s Connect</h3>
-              <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
-                I&apos;m always interested in hearing about new opportunities and exciting projects. Whether you have a question or just want to say hi, feel free to reach out!
+          <div className="grid md:grid-cols-[1fr_1.15fr] gap-10 md:gap-14">
+            {/* Info */}
+            <ScrollReveal direction="right">
+              <h3 className="font-serif text-3xl text-white">Let&apos;s connect</h3>
+              <p className="mt-4 text-slate-400 text-sm sm:text-base leading-relaxed">
+                I&apos;m always interested in hearing about new opportunities and exciting projects. Whether you have a
+                question or just want to say hi, feel free to reach out!
               </p>
-              
-              <div className="space-y-4 pt-2">
-                
-                <div className="flex items-center space-x-4 text-slate-300 hover:text-sky-300 transition-colors group">
-                  <div className="w-10 h-10 rounded-full bg-sky-500/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                    <Mail className="w-4 h-4 text-sky-400" />
-                  </div>
-                  <span className="text-sm sm:text-base font-medium">meharaudawatte@gmail.com</span>
-                </div>
-                
-                <div className="flex items-center space-x-4 text-slate-300 hover:text-indigo-300 transition-colors group">
-                  <div className="w-10 h-10 rounded-full bg-indigo-500/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                    <Phone className="w-4 h-4 text-indigo-400" />
-                  </div>
-                  <span className="text-sm sm:text-base font-medium">+94 76 554 0319</span>
-                </div>
-                
-                <div className="flex items-center space-x-4 text-slate-300 hover:text-violet-300 transition-colors group">
-                  <div className="w-10 h-10 rounded-full bg-violet-500/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                    <MapPin className="w-4 h-4 text-violet-400" />
-                  </div>
-                  <span className="text-sm sm:text-base font-medium">Colombo, Sri Lanka</span>
-                </div>
 
+              <div className="mt-8 space-y-3">
+                {CONTACTS.map(({ label, value, href, icon: Icon, accent }) => {
+                  const Row = href ? "a" : "div"
+                  return (
+                    <Row key={label} href={href} className="contact-row group" style={{ "--accent": accent }}>
+                      <span className="icon-tile">
+                        <Icon className="w-4 h-4" />
+                      </span>
+                      <span className="flex flex-col min-w-0">
+                        <span className="text-[11px] uppercase tracking-[0.15em] text-slate-500 font-mono">{label}</span>
+                        <span className="text-sm sm:text-[15px] text-slate-200 truncate">{value}</span>
+                      </span>
+                      {href && (
+                        <ArrowUpRight className="ml-auto w-4 h-4 text-slate-500 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300" />
+                      )}
+                    </Row>
+                  )
+                })}
               </div>
 
-              {/* Social Media Link Buttons */}
-              <div className="flex space-x-3 pt-4">
-                <a href="https://www.linkedin.com/in/mehara-udawatte" target="_blank" rel="noopener noreferrer">
-                  <Button size="sm" variant="outline" className="border-sky-400/30 text-sky-300 hover:bg-sky-400/20 h-10 w-10 p-0 bg-transparent rounded-full hover:scale-110 hover:border-sky-400 transition-all duration-300">
-                    <Linkedin className="w-4 h-4" />
-                  </Button>
-                </a>
-                <a href="https://www.instagram.com/mehaa.ra?igsh=NmV5eXRnbG9mNXJk&utm_source=qr" target="_blank" rel="noopener noreferrer">
-                  <Button size="sm" variant="outline" className="border-indigo-400/30 text-indigo-300 hover:bg-indigo-500/20 h-10 w-10 p-0 bg-transparent rounded-full hover:scale-110 hover:border-indigo-400 transition-all duration-300">
-                    <Instagram className="w-4 h-4" />
-                  </Button>
-                </a>
-                <a href="https://github.com/mehara2003" target="_blank" rel="noopener noreferrer">
-                  <Button size="sm" variant="outline" className="border-slate-500/30 text-slate-300 hover:bg-slate-500/20 h-10 w-10 p-0 bg-transparent rounded-full hover:scale-110 hover:border-slate-300 transition-all duration-300">
-                    <Github className="w-4 h-4" />
-                  </Button>
-                </a>
+              <div className="mt-8 flex gap-3">
+                {SOCIALS.map(({ label, href, icon: Icon }) => (
+                  <a key={label} href={href} target="_blank" rel="noopener noreferrer" aria-label={label} className="social">
+                    <Icon className="w-4 h-4" />
+                  </a>
+                ))}
               </div>
             </ScrollReveal>
 
-            {/* Form Container */}
-            <ScrollReveal direction="left">
-              <Card className="bg-slate-950/40 backdrop-blur-md border border-[#1a5e95]/30 shadow-xl hover-edge-glow">
-                <CardContent className="p-5">
-                  <form action="https://api.web3forms.com/submit" method="POST" className="space-y-4">
-                    
-                    <input
-                      type="hidden"
-                      name="access_key"
-                      value="b005c4fb-b4b4-477d-88e7-1edf3fe5a07f"
-                    />
-                    <input type="hidden" name="subject" value="New Portfolio Message" />
-                    <input type="hidden" name="from_name" value="Portfolio Website" />
+            {/* Form */}
+            <ScrollReveal direction="left" delay={120}>
+              <SpotlightCard tilt={false} className="p-6 sm:p-8">
+                <form action="https://api.web3forms.com/submit" method="POST" className="space-y-5">
+                  <input type="hidden" name="access_key" value="b005c4fb-b4b4-477d-88e7-1edf3fe5a07f" />
+                  <input type="hidden" name="subject" value="New Portfolio Message" />
+                  <input type="hidden" name="from_name" value="Portfolio Website" />
 
-                    <div className="grid grid-cols-2 gap-3">
-                      <Input
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <label className="block">
+                      <span className="field-label">First name</span>
+                      <input
                         name="first_name"
                         value={firstName}
                         onChange={(e) => setFirstName(e.target.value)}
-                        placeholder="First Name"
+                        placeholder="Jane"
                         required
-                        className="bg-slate-900/50 border-slate-700/50 text-white placeholder:text-slate-500 focus:border-sky-400/50 focus:ring-sky-400/20 text-sm rounded-lg transition-all focus:scale-[1.01]"
+                        className="field"
                       />
-                      <Input
+                    </label>
+                    <label className="block">
+                      <span className="field-label">Last name</span>
+                      <input
                         name="last_name"
                         value={lastName}
                         onChange={(e) => setLastName(e.target.value)}
-                        placeholder="Last Name"
-                        className="bg-slate-900/50 border-slate-700/50 text-white placeholder:text-slate-500 focus:border-sky-400/50 focus:ring-sky-400/20 text-sm rounded-lg transition-all focus:scale-[1.01]"
+                        placeholder="Doe"
+                        className="field"
                       />
-                    </div>
-                    
-                    <Input
+                    </label>
+                  </div>
+
+                  <label className="block">
+                    <span className="field-label">Email</span>
+                    <input
                       name="email"
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="Email Address"
+                      placeholder="you@example.com"
                       required
-                      className="bg-slate-900/50 border-slate-700/50 text-white placeholder:text-slate-500 focus:border-sky-400/50 focus:ring-sky-400/20 text-sm rounded-lg transition-all focus:scale-[1.01]"
+                      className="field"
                     />
-                    
-                    <Input
+                  </label>
+
+                  <label className="block">
+                    <span className="field-label">Subject</span>
+                    <input
                       name="subject"
                       value={subject}
                       onChange={(e) => setSubject(e.target.value)}
-                      placeholder="Subject"
+                      placeholder="What's this about?"
                       required
-                      className="bg-slate-900/50 border-slate-700/50 text-white placeholder:text-slate-500 focus:border-sky-400/50 focus:ring-sky-400/20 text-sm rounded-lg transition-all focus:scale-[1.01]"
+                      className="field"
                     />
-                    
-                    <Textarea
+                  </label>
+
+                  <label className="block">
+                    <span className="field-label">Message</span>
+                    <textarea
                       name="message"
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
-                      placeholder="Your Message"
-                      rows={4}
+                      placeholder="Tell me a little about your idea…"
+                      rows={5}
                       required
-                      className="bg-slate-900/50 border-slate-700/50 text-white placeholder:text-slate-500 focus:border-sky-400/50 focus:ring-sky-400/20 resize-none text-sm rounded-lg transition-all focus:scale-[1.01]"
+                      className="field resize-none"
                     />
+                  </label>
 
-                    <MagneticButton
-                      type="submit"
-                      className="w-full bg-gradient-to-r from-sky-500 to-[#1a5e95] hover:from-sky-600 hover:to-blue-700 text-white font-medium py-2.5 rounded-lg shadow-md cursor-pointer"
-                    >
-                      <Send className="w-4 h-4 mr-2" />
-                      Send Message
-                    </MagneticButton>
-                  </form>
-                </CardContent>
-              </Card>
+                  <MagneticButton type="submit" strength={0.08} className="btn btn-primary w-full">
+                    Send Message
+                    <Send className="arrow w-4 h-4" />
+                  </MagneticButton>
+                </form>
+              </SpotlightCard>
             </ScrollReveal>
-
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-8 px-6 border-t border-[#1a5e95]/20 bg-slate-950/40 relative z-10">
-        <div className="max-w-5xl mx-auto text-center space-y-2">
-          <p className="text-slate-400 text-sm">© 2026 Mehara Udawatte. All rights reserved.</p>
+      {/* ============================ FOOTER ========================== */}
+      <footer className="relative z-10 px-6 py-10 border-t border-white/[0.06]">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-slate-500 text-sm">© 2026 Mehara Udawatte. All rights reserved.</p>
+          <button
+            onClick={() => scrollToSection("home")}
+            className="group inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors"
+          >
+            Back to top
+            <span className="grid place-items-center w-8 h-8 rounded-full border border-white/10 group-hover:border-sky-300/50 group-hover:-translate-y-1 transition-all duration-300">
+              <ArrowUp className="w-3.5 h-3.5" />
+            </span>
+          </button>
         </div>
       </footer>
 
-      {/* Image Modal Preview */}
+      {/* ============================ MODAL =========================== */}
       {selectedImage && (
-        <div 
-          className="fixed inset-0 bg-black/80 flex justify-center items-center z-50 p-4 backdrop-blur-sm transition-all duration-300"
+        <div
+          className="modal-backdrop"
           onClick={() => setSelectedImage(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-label={selectedImage.title}
         >
-          <div className="relative max-w-3xl w-full mx-auto" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-panel" onClick={(e) => e.stopPropagation()}>
             <img
-              src={selectedImage}
-              alt="Project preview"
-              className="w-full h-auto rounded-lg border-2 border-sky-400/40 shadow-2xl"
+              src={selectedImage.image}
+              alt={selectedImage.title}
+              className="w-full h-auto max-h-[80vh] object-contain rounded-2xl border border-white/10 shadow-2xl"
             />
-            <button
-              onClick={() => setSelectedImage(null)}
-              className="absolute -top-12 right-0 text-white text-sm bg-sky-500 hover:bg-sky-600 rounded-full px-3 py-1 shadow-md hover:scale-105 transition-transform"
-            >
-              Close
-            </button>
+            <div className="mt-4 flex items-center justify-between gap-4">
+              <p className="text-sm text-slate-300">{selectedImage.title}</p>
+              <button
+                onClick={() => setSelectedImage(null)}
+                className="shrink-0 grid place-items-center w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+                aria-label="Close preview"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </div>
       )}

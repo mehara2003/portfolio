@@ -1,81 +1,67 @@
 "use client"
 
-import React, { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
+
+const OFFSETS = {
+  up: "translate3d(0, 36px, 0)",
+  down: "translate3d(0, -36px, 0)",
+  left: "translate3d(36px, 0, 0)",
+  right: "translate3d(-36px, 0, 0)",
+  scale: "scale(0.94)",
+  none: "none",
+}
 
 export default function ScrollReveal({
   children,
   direction = "up",
   delay = 0,
-  duration = 800,
-  threshold = 0.1,
+  duration = 1000,
+  threshold = 0.12,
+  blur = true,
   className = "",
+  as: Tag = "div",
+  style,
+  ...props
 }) {
-  const [isVisible, setIsVisible] = useState(false)
   const ref = useRef(null)
+  const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    if (typeof IntersectionObserver === "undefined") {
+      setIsVisible(true)
+      return
+    }
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
           setIsVisible(true)
-          // Once visible, we can unobserve to avoid rerun animations unless we want it to run every scroll.
-          if (ref.current) {
-            observer.unobserve(ref.current)
-          }
+          observer.disconnect()
         }
       },
-      {
-        threshold,
-        rootMargin: "0px 0px -50px 0px", // triggers slightly before entering the full screen
-      }
+      { threshold, rootMargin: "0px 0px -60px 0px" }
     )
 
-    const currentRef = ref.current
-    if (currentRef) {
-      observer.observe(currentRef)
-    }
-
-    return () => {
-      if (currentRef) {
-        observer.unobserve(currentRef)
-      }
-    }
+    observer.observe(el)
+    return () => observer.disconnect()
   }, [threshold])
 
-  const getDirectionClass = () => {
-    switch (direction) {
-      case "up":
-        return "translate-y-12 opacity-0"
-      case "down":
-        return "-translate-y-12 opacity-0"
-      case "left":
-        return "translate-x-12 opacity-0"
-      case "right":
-        return "-translate-x-12 opacity-0"
-      case "scale":
-        return "scale-90 opacity-0"
-      case "none":
-      default:
-        return "opacity-0"
-    }
-  }
-
-  const getTransitionStyle = () => {
-    return {
-      transitionDuration: `${duration}ms`,
-      transitionDelay: `${delay}ms`,
-    }
-  }
-
   return (
-    <div
+    <Tag
       ref={ref}
-      style={getTransitionStyle()}
-      className={`transition-all cubic-bezier(0.16, 1, 0.3, 1) ${
-        isVisible ? "translate-y-0 translate-x-0 scale-100 opacity-100" : getDirectionClass()
-      } ${className}`}
+      className={`reveal ${isVisible ? "is-visible" : ""} ${className}`}
+      style={{
+        "--reveal-from": OFFSETS[direction] ?? OFFSETS.up,
+        "--reveal-duration": `${duration}ms`,
+        "--reveal-delay": `${delay}ms`,
+        "--reveal-blur": blur ? "8px" : "0px",
+        ...style,
+      }}
+      {...props}
     >
       {children}
-    </div>
+    </Tag>
   )
 }
